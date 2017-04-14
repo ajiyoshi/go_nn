@@ -77,3 +77,9 @@ func Dump(m mat64.Matrix) {
 	fmt.Printf("%v\n",
 		mat64.Formatted(m, mat64.Prefix(" "), mat64.Excerpt(3)))
 }
+
+func Dump_(m mat64.Matrix, header string, n int) {
+	fmt.Printf("%s %v\n",
+		header,
+		mat64.Formatted(m, mat64.Prefix(" "), mat64.Excerpt(n)))
+}

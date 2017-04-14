@@ -3,14 +3,44 @@ package main
 import (
 	"fmt"
 	"github.com/gonum/matrix/mat64"
+	"math/rand"
 	"os"
+	"time"
 )
 
 func main() {
-	err := Main2()
+	err := Main3()
 	if err != nil {
 		fmt.Println(err)
 	}
+}
+
+func Main3() error {
+	m, err := NewMnist("./train-images-idx3-ubyte", "./train-labels-idx1-ubyte")
+	if err != nil {
+		return err
+	}
+	defer m.Close()
+
+	img := m.Images
+	len := img.Rows * img.Cols
+	impl := NewTwoLayerNN(len, 50, 10, NewMomentumFactory(0.1, 0.1))
+	nn := NewNeuralNet(impl)
+
+	rand.Seed(time.Now().Unix())
+	buf := make([]float64, len)
+	for i := 0; i < 100000; i++ {
+		index := rand.Intn(m.Images.Num)
+		data, label := m.At(index)
+		LoadVec(data, buf)
+		x := mat64.NewVector(len, buf)
+		t := LoadLabel(label)
+		nn.Train(x, t)
+		//fmt.Printf("(%d, %d)\n", ArgmaxV(nn.Predict(x)), label)
+		//Dump(nn.Predict(x).T())
+	}
+
+	return nil
 }
 
 func Main2() error {

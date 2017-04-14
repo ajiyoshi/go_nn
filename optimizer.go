@@ -34,25 +34,35 @@ func NewMomentum(lr, mo float64) *Momentum {
 }
 
 func (o *Momentum) UpdateWeight(param, grad *mat64.Dense) {
-	if o.vW == nil {
-		r, c := param.Dims()
-		o.vW = mat64.NewDense(r, c, nil)
-	}
-	v := o.vW
-	update := func(i, j int, x float64) float64 {
-		return o.Momentum*x - o.Lr*grad.At(i, j)
-	}
-	v.Apply(update, v)
-	param.Add(param, v)
+	/*
+		if o.vW == nil {
+			r, c := param.Dims()
+			o.vW = mat64.NewDense(r, c, nil)
+		}
+		v := o.vW
+		update := func(i, j int, x float64) float64 {
+			return o.Momentum*x - o.Lr*grad.At(i, j)
+		}
+		v.Apply(update, v)
+		Dump(v)
+		param.Add(param, v)
+	*/
+	grad.Scale(-0.1, grad)
+	param.Add(param, grad)
 }
 
 func (o *Momentum) UpdateBias(param, grad *mat64.Vector) {
-	if o.vB == nil {
-		len := param.Len()
-		o.vB = mat64.NewVector(len, nil)
-	}
-	v := o.vB
-	v.ScaleVec(o.Momentum, v)
-	v.AddScaledVec(v, -o.Lr, grad)
-	param.AddVec(param, v)
+	/*
+		if o.vB == nil {
+			len := param.Len()
+			o.vB = mat64.NewVector(len, nil)
+		}
+		v := o.vB
+		v.ScaleVec(o.Momentum, v)
+		v.AddScaledVec(v, -o.Lr, grad)
+		Dump(v)
+		param.AddVec(param, v)
+	*/
+	//Dump(grad)
+	param.AddScaledVec(param, -0.1, grad)
 }

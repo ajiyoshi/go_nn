@@ -16,7 +16,7 @@ func TestAffine(t *testing.T) {
 		dx    *mat64.Vector
 	}{
 		{
-			title: "hoge",
+			title: "TestAffine",
 			w: mat64.NewDense(2, 3, []float64{
 				1, 2, 3,
 				4, 5, 6,
@@ -48,7 +48,7 @@ func TestSoftMax(t *testing.T) {
 		expect *mat64.Vector
 	}{
 		{
-			title:  "hoge",
+			title:  "TestSoftMax",
 			input:  mat64.NewVector(3, []float64{1, 2, 3}),
 			expect: mat64.NewVector(3, []float64{0.09003057317038045, 0.2447284710547976, 0.6652409557748218}),
 		},
@@ -90,10 +90,10 @@ func TestReLULayer(t *testing.T) {
 		expect *mat64.Vector
 	}{
 		{
-			title:  "hoge",
+			title:  "TestReLU",
 			x:      mat64.NewVector(3, []float64{2, -1, -2}),
 			y:      mat64.NewVector(3, []float64{2, 0, 0}),
-			dout:   mat64.NewVector(3, []float64{-1, 1, 0}),
+			dout:   mat64.NewVector(3, []float64{-1, 1, -1}),
 			expect: mat64.NewVector(3, []float64{-1, 0, 0}),
 		},
 	} {
