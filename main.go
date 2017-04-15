@@ -9,12 +9,83 @@ import (
 )
 
 func main() {
-	err := Main3()
+	err := Main4()
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
+func Main5() error {
+	m, err := NewMnist("./train-images-idx3-ubyte", "./train-labels-idx1-ubyte")
+	if err != nil {
+		return err
+	}
+	defer m.Close()
+
+	img := m.Images
+	len := img.Rows * img.Cols
+	rows := 25
+	layer := NewTwoLayerBatchNN(len, 50, 10, NewMomentumFactory(0.1, 0.1))
+	nn := &BatchNeuralNet{layer}
+
+	rand.Seed(time.Now().Unix())
+	buf := NewTrainBuffer(rows, len, 10)
+	for i := 0; i < 100; i++ {
+		index := rand.Intn(m.Images.Num - rows)
+		at := seq(index, rows)
+		buf.Load(m, at)
+		x, t := buf.Bake()
+		fmt.Printf("x(%d) %s\n", index, Summary(x))
+		fmt.Printf("W(%d) %s\n", index, Summary(layer.affine1.Weight))
+		fmt.Printf("dW(%d) %s\n", index, Summary(layer.affine1.DWeight))
+		loss := nn.Train(x, t)
+		fmt.Println(loss)
+		//fmt.Printf("(%d, %d)\n", ArgmaxV(nn.Predict(x)), label)
+		//Dump(nn.Predict(x).T())
+	}
+
+	return nil
+}
+
+func Main4() error {
+	m, err := NewMnist("./train-images-idx3-ubyte", "./train-labels-idx1-ubyte")
+	if err != nil {
+		return err
+	}
+	defer m.Close()
+
+	rows := 100
+	img := m.Images
+	len := img.Rows * img.Cols
+
+	layer := NewFiveLayerBatchNN(len, 100, 10, NewMomentumFactory(0.1, 0.1))
+	nn := &BatchNeuralNet{layer}
+
+	rand.Seed(time.Now().Unix())
+	buf := NewTrainBuffer(rows, len, 10)
+	for i := 0; i < 2000; i++ {
+		at := randamSeq(rows, m.Images.Num)
+		buf.Load(m, at)
+		x, t := buf.Bake()
+		loss := nn.Train(x, t)
+		if i%100 == 0 {
+			fmt.Printf("%f, %f\n", loss, nn.Accracy(x, t))
+		}
+	}
+
+	m2, err := NewMnist("./t10k-images-idx3-ubyte", "./t10k-labels-idx1-ubyte")
+	if err != nil {
+		return err
+	}
+	defer m2.Close()
+
+	buf = NewTrainBuffer(1000, len, 10)
+	buf.Load(m2, seq(0, 1000))
+	x, t := buf.Bake()
+	fmt.Printf("%f, %f\n", nn.Loss(x, t), nn.Accracy(x, t))
+
+	return nil
+}
 func Main3() error {
 	m, err := NewMnist("./train-images-idx3-ubyte", "./train-labels-idx1-ubyte")
 	if err != nil {
@@ -35,9 +106,12 @@ func Main3() error {
 		LoadVec(data, buf)
 		x := mat64.NewVector(len, buf)
 		t := LoadLabel(label)
-		nn.Train(x, t)
-		//fmt.Printf("(%d, %d)\n", ArgmaxV(nn.Predict(x)), label)
-		//Dump(nn.Predict(x).T())
+		loss := nn.Train(x, t)
+		fmt.Printf("%d %f W(%s) dW(%s)\n",
+			i,
+			loss,
+			Summary(impl.affine1.Weight),
+			Summary(impl.affine1.DWeight))
 	}
 
 	return nil

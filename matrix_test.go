@@ -96,6 +96,17 @@ func TestSoftMax(t *testing.T) {
 			input:  mat64.NewDense(1, 3, []float64{1, 2, 3}),
 			expect: mat64.NewDense(1, 3, []float64{0.0900, 0.2447, 0.6652}),
 		},
+		{
+			title: "TestSoftMax",
+			input: mat64.NewDense(2, 3, []float64{
+				1, 2, 3,
+				-1, 0, 1000,
+			}),
+			expect: mat64.NewDense(2, 3, []float64{
+				0.0900, 0.2447, 0.6652,
+				0, 0, 1,
+			}),
+		},
 	} {
 		actual := SoftMax(c.input)
 		if !mat64.EqualApprox(actual, c.expect, 0.0001) {
@@ -113,8 +124,8 @@ func TestCrossEntrpyError(t *testing.T) {
 	}{
 		{
 			title:  "hoge",
-			y:      mat64.NewVector(10, []float64{0.1, 0.05, 0.6, 0, 0.05, 0.1, 0, 0.1, 0, 0}),
-			t:      mat64.NewVector(10, []float64{0, 0, 1, 0, 0, 0, 0, 0, 0, 0}),
+			y:      mat64.NewDense(1, 10, []float64{0.1, 0.05, 0.6, 0, 0.05, 0.1, 0, 0.1, 0, 0}),
+			t:      mat64.NewDense(1, 10, []float64{0, 0, 1, 0, 0, 0, 0, 0, 0, 0}),
 			expect: 0.51082545709933803,
 		},
 	} {

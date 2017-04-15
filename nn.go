@@ -45,7 +45,7 @@ func RandamDense(raws, cols int) *mat64.Dense {
 	ret := mat64.NewDense(raws, cols, nil)
 	for r := 0; r < raws; r++ {
 		for c := 0; c < cols; c++ {
-			ret.Set(r, c, rand.Float64())
+			ret.Set(r, c, rand.NormFloat64())
 		}
 	}
 	return ret

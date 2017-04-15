@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/gonum/matrix/mat64"
 	"golang.org/x/exp/mmap"
 	"image"
 	"image/color"
@@ -194,27 +193,4 @@ func MustRead(m *mmap.ReaderAt, offset int64, buf []byte) error {
 		panic(fmt.Sprintf("bad file(try to read %d bytes but got %d bytes", len(buf), n))
 	}
 	return nil
-}
-
-func LoadVec(raw []byte, buf []float64) {
-	for i, v := range raw {
-		buf[i] = float64(v) / 255.0
-	}
-}
-
-var labels []*mat64.Vector = []*mat64.Vector{
-	mat64.NewVector(10, []float64{1, 0, 0, 0, 0, 0, 0, 0, 0, 0}),
-	mat64.NewVector(10, []float64{0, 1, 0, 0, 0, 0, 0, 0, 0, 0}),
-	mat64.NewVector(10, []float64{0, 0, 1, 0, 0, 0, 0, 0, 0, 0}),
-	mat64.NewVector(10, []float64{0, 0, 0, 1, 0, 0, 0, 0, 0, 0}),
-	mat64.NewVector(10, []float64{0, 0, 0, 0, 1, 0, 0, 0, 0, 0}),
-	mat64.NewVector(10, []float64{0, 0, 0, 0, 0, 1, 0, 0, 0, 0}),
-	mat64.NewVector(10, []float64{0, 0, 0, 0, 0, 0, 1, 0, 0, 0}),
-	mat64.NewVector(10, []float64{0, 0, 0, 0, 0, 0, 0, 1, 0, 0}),
-	mat64.NewVector(10, []float64{0, 0, 0, 0, 0, 0, 0, 0, 1, 0}),
-	mat64.NewVector(10, []float64{0, 0, 0, 0, 0, 0, 0, 0, 0, 1}),
-}
-
-func LoadLabel(label byte) *mat64.Vector {
-	return labels[label]
 }

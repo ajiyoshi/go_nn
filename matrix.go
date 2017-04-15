@@ -35,12 +35,16 @@ func (m *DiagMatrix) T() mat64.Matrix {
 }
 
 func CrossEntropyError(y, t mat64.Matrix) float64 {
-	const delta = 1e-7
-	tmp := mat64.DenseCopyOf(y)
+	const delta = 1e-6
+	var tmp mat64.Dense
 	tmp.Apply(func(i, j int, x float64) float64 {
 		return math.Log(x+delta) * t.At(i, j)
-	}, tmp)
-	return -mat64.Sum(tmp)
+	}, y)
+	r, c := y.Dims()
+	if c == 1 {
+		return -mat64.Sum(&tmp)
+	}
+	return -mat64.Sum(&tmp) / float64(r)
 }
 
 func SoftMaxV(v *mat64.Vector) *mat64.Vector {
@@ -55,11 +59,11 @@ func SoftMaxV(v *mat64.Vector) *mat64.Vector {
 }
 
 func SoftMax(m mat64.Matrix) mat64.Matrix {
-	max := mat64.Max(m)
+	max := SumRows(m, nil)
 
 	var ret mat64.Dense
 	ret.Apply(func(i, j int, x float64) float64 {
-		return math.Exp(x - max)
+		return math.Exp(x - max.At(i, 0))
 	}, m)
 
 	NormalizeEachRow(&ret)
@@ -73,6 +77,18 @@ func NormalizeEachRow(m *mat64.Dense) {
 	})
 	k := NewDiagMatrixFromVec(v)
 	m.Mul(k, m)
+}
+
+func Argmax(v []float64) int {
+	max := math.Inf(-1)
+	ret := 0
+	for i, x := range v {
+		if x > max {
+			max = x
+			ret = i
+		}
+	}
+	return ret
 }
 
 func ArgmaxV(v *mat64.Vector) int {
@@ -159,7 +175,31 @@ func Dump(m mat64.Matrix) {
 }
 
 func Dump_(m mat64.Matrix, header string, n int) {
-	fmt.Printf("%s %v\n",
+	fmt.Printf("%s %.2g\n",
 		header,
 		mat64.Formatted(m, mat64.Prefix(" "), mat64.Excerpt(n)))
+}
+
+func Summary(m mat64.Matrix) string {
+	r, c := m.Dims()
+	n := float64(r * c)
+	ave := mat64.Sum(m) / n
+	max := math.Inf(-1)
+	min := math.Inf(0)
+	ss := 0.0
+	for i := 0; i < r; i++ {
+		for j := 0; j < c; j++ {
+			x := m.At(i, j)
+			ss += x * x
+			if x > max {
+				max = x
+			}
+			if x < min {
+				min = x
+			}
+		}
+	}
+	sigma := ave*ave - ss/n
+
+	return fmt.Sprintf("(%d, %d) max:%.2g min:%.2g ave:%.2g sigma:%.2g", r, c, max, min, ave, sigma)
 }

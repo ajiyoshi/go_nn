@@ -130,7 +130,9 @@ func (l *BatchSoftMaxWithLoss) Forward(x, t mat64.Matrix) float64 {
 }
 
 func (l *BatchSoftMaxWithLoss) Backward(dout float64) mat64.Matrix {
+	r, _ := l.y.Dims()
 	var dx mat64.Dense
 	dx.Sub(l.y, l.t)
+	dx.Scale(1.0/float64(r), &dx)
 	return &dx
 }

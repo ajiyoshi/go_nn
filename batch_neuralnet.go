@@ -29,6 +29,20 @@ func (nn *BatchNeuralNet) Loss(x, t mat64.Matrix) float64 {
 	return nn.layers.Last().Forward(y, t)
 }
 
+func (nn *BatchNeuralNet) Accracy(x, t mat64.Matrix) float64 {
+	y := nn.Predict(x)
+	r, _ := x.Dims()
+	ok := 0.0
+	for i := 0; i < r; i++ {
+		a := Argmax(mat64.Row(nil, i, y))
+		b := Argmax(mat64.Row(nil, i, t))
+		if a == b {
+			ok++
+		}
+	}
+	return ok / float64(r)
+}
+
 func (nn *BatchNeuralNet) BackProp() mat64.Matrix {
 	dout := nn.layers.Last().Backward(1)
 	for _, layer := range LayerReverseB(nn.Layers()) {
