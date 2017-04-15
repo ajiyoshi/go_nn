@@ -112,7 +112,7 @@ type SoftMaxWithLoss struct {
 
 func (l *SoftMaxWithLoss) Forward(x, t *mat64.Vector) float64 {
 	l.t = VecClone(t)
-	l.y = SoftMax(x)
+	l.y = SoftMaxV(x)
 	l.loss = CrossEntropyError(l.y, t)
 	//Dump_(l.y.T(), "softmax", 5)
 	return l.loss
