@@ -82,7 +82,7 @@ func Main4() error {
 	buf = NewTrainBuffer(1000, len, 10)
 	buf.Load(m2, seq(0, 1000))
 	x, t := buf.Bake()
-	fmt.Printf("%f, %f\n", nn.Loss(x, t), nn.Accracy(x, t))
+	fmt.Printf("test:%f, %f\n", nn.Loss(x, t), nn.Accracy(x, t))
 
 	return nil
 }
