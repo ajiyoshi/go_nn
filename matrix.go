@@ -10,7 +10,21 @@ type DiagMatrix struct {
 	v *mat64.Vector
 }
 
-var _ mat64.Matrix = &DiagMatrix{}
+var (
+	_ mat64.Matrix = &DiagMatrix{}
+	_ mat64.Matrix = &SubMatrix{}
+	_ mat64.Matrix = &ZeroPadMatrix{}
+	_ mat64.Matrix = &ImageMatrix{}
+)
+
+func MatFlatten(m mat64.Matrix) []float64 {
+	r, c := m.Dims()
+	ret := make([]float64, 0, r*c)
+	for j := 0; j < r; j++ {
+		ret = append(ret, mat64.Row(nil, j, m)...)
+	}
+	return ret
+}
 
 func NewDiagMatrix(n int, x []float64) *DiagMatrix {
 	return &DiagMatrix{mat64.NewVector(n, x)}
@@ -202,4 +216,56 @@ func Summary(m mat64.Matrix) string {
 	sigma := ave*ave - ss/n
 
 	return fmt.Sprintf("(%d, %d) max:%.2g min:%.2g ave:%.2g sigma:%.2g", r, c, max, min, ave, sigma)
+}
+
+type SubMatrix struct {
+	m          mat64.Matrix
+	i, j, r, c int
+}
+
+func NewSubMatrix(m mat64.Matrix, i, j, r, c int) *SubMatrix {
+	return &SubMatrix{
+		m: m,
+		i: i,
+		j: j,
+		r: r,
+		c: c,
+	}
+}
+func (m *SubMatrix) At(i, j int) float64 {
+	return m.m.At(m.i+i, m.j+j)
+}
+func (m *SubMatrix) Dims() (int, int) {
+	return m.r, m.c
+}
+func (m *SubMatrix) T() mat64.Matrix {
+	return NewSubMatrix(m.m.T(), m.j, m.i, m.c, m.r)
+}
+
+type ZeroPadMatrix struct {
+	m mat64.Matrix
+	n int
+}
+
+func NewZeroPadMatrix(m mat64.Matrix, n int) *ZeroPadMatrix {
+	return &ZeroPadMatrix{
+		m: m,
+		n: n,
+	}
+}
+func (m *ZeroPadMatrix) At(i, j int) float64 {
+	i -= m.n
+	j -= m.n
+	r, c := m.m.Dims()
+	if i < 0 || j < 0 || i >= r || j >= c {
+		return 0
+	}
+	return m.m.At(i, j)
+}
+func (m *ZeroPadMatrix) Dims() (int, int) {
+	r, c := m.m.Dims()
+	return r + m.n*2, c + m.n*2
+}
+func (m *ZeroPadMatrix) T() mat64.Matrix {
+	return NewZeroPadMatrix(m.m.T(), m.n)
 }
