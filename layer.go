@@ -57,7 +57,6 @@ func (l *AffineLayer) Forward(x *mat64.Vector) *mat64.Vector {
 	ret := mat64.NewVector(l.dimOut, nil)
 	ret.MulVec(l.Weight.T(), x)
 	ret.AddVec(ret, l.Bias)
-	//Dump_(ret.T(), "affine", 5)
 	return ret
 }
 
@@ -94,7 +93,6 @@ func (l *ReLULayer) Forward(x *mat64.Vector) *mat64.Vector {
 	})
 	ret := mat64.NewVector(x.Len(), nil)
 	ret.MulElemVec(x, l.mask)
-	//Dump_(ret.T(), "relu", 5)
 	return ret
 }
 func (l *ReLULayer) Backward(dout *mat64.Vector) *mat64.Vector {
@@ -114,7 +112,6 @@ func (l *SoftMaxWithLoss) Forward(x, t *mat64.Vector) float64 {
 	l.t = VecClone(t)
 	l.y = SoftMaxV(x)
 	l.loss = CrossEntropyError(l.y, t)
-	//Dump_(l.y.T(), "softmax", 5)
 	return l.loss
 }
 

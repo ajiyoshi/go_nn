@@ -18,6 +18,4 @@ func TestMomemtum(t *testing.T) {
 	})
 
 	m.UpdateWeight(param, grad)
-
-	Dump(param)
 }

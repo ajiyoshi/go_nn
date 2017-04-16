@@ -40,8 +40,6 @@ func Main5() error {
 		fmt.Printf("dW(%d) %s\n", index, Summary(layer.affine1.DWeight))
 		loss := nn.Train(x, t)
 		fmt.Println(loss)
-		//fmt.Printf("(%d, %d)\n", ArgmaxV(nn.Predict(x)), label)
-		//Dump(nn.Predict(x).T())
 	}
 
 	return nil

@@ -37,7 +37,6 @@ func TestAffine(t *testing.T) {
 		if !mat64.Equal(dx, c.dx) {
 			t.Fatalf("%s expect %v but got %v", c.title, c.dx, dx)
 		}
-		Dump(layer.DWeight)
 	}
 }
 
