@@ -54,7 +54,7 @@ func Main4() error {
 	}
 	defer m.Close()
 
-	rows := 100
+	rows := 200
 	img := m.Images
 	len := img.Rows * img.Cols
 
@@ -63,7 +63,7 @@ func Main4() error {
 
 	rand.Seed(time.Now().Unix())
 	buf := NewTrainBuffer(rows, len, 10)
-	for i := 0; i < 2000; i++ {
+	for i := 0; i < 3000; i++ {
 		at := randamSeq(rows, m.Images.Num)
 		buf.Load(m, at)
 		x, t := buf.Bake()
