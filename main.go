@@ -77,8 +77,8 @@ func Main4() error {
 	}
 	defer m2.Close()
 
-	buf = NewTrainBuffer(1000, len, 10)
-	buf.Load(m2, seq(0, 1000))
+	buf = NewTrainBuffer(10000, len, 10)
+	buf.Load(m2, seq(0, 10000))
 	x, t := buf.Bake()
 	fmt.Printf("test:%f, %f\n", nn.Loss(x, t), nn.Accracy(x, t))
 

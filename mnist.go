@@ -152,6 +152,16 @@ func NewMnistLabel(path string) (*MnistLabel, error) {
 		return nil, err
 	}
 
+	ret, err := initMnistLabel(m)
+	if err != nil {
+		m.Close()
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func initMnistLabel(m *mmap.ReaderAt) (*MnistLabel, error) {
 	magic, err := Int32At(m, 0)
 	if err != nil {
 		return nil, err
