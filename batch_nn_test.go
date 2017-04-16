@@ -77,10 +77,5 @@ func TestBatchNNSimple(t *testing.T) {
 		if !mat64.EqualApprox(layers.affine.DBias, dB, 0.01) {
 			t.Fatalf("%s expect(%v) but got (%v)", c.title, layers.affine.DBias, dB)
 		}
-
-		nn.Update()
-		if mat64.EqualApprox(layers.affine.DWeight, c.dW, 0.01) {
-			t.Fatalf("%s expect(%v) but got (%v)", c.title, c.dW, layers.affine.DWeight)
-		}
 	}
 }

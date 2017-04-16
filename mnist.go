@@ -82,6 +82,16 @@ func NewMnistImage(path string) (*MnistImage, error) {
 		return nil, err
 	}
 
+	ret, err := initMnistImage(m)
+	if err != nil {
+		m.Close()
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func initMnistImage(m *mmap.ReaderAt) (*MnistImage, error) {
 	magic, err := Int32At(m, 0)
 	if err != nil {
 		return nil, err
@@ -99,11 +109,9 @@ func NewMnistImage(path string) (*MnistImage, error) {
 		return nil, err
 	}
 
-	buf := make([]byte, rows*cols)
-
 	return &MnistImage{
 		m:           m,
-		buf:         buf,
+		buf:         make([]byte, rows*cols),
 		MagicNumber: int(magic),
 		Num:         int(num),
 		Rows:        int(rows),

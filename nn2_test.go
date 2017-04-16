@@ -77,10 +77,5 @@ func TestSimple2(t *testing.T) {
 		if !mat64.EqualApprox(impl.affine.DBias, dB, 0.01) {
 			t.Fatalf("%s expect(%v) but got (%v)", c.title, impl.affine.DBias, dB)
 		}
-
-		nn.Update()
-		if mat64.EqualApprox(impl.affine.DWeight, c.dW, 0.01) {
-			t.Fatalf("%s expect(%v) but got (%v)", c.title, c.dW, impl.affine.DWeight)
-		}
 	}
 }
