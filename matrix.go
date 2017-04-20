@@ -11,10 +11,10 @@ type DiagMatrix struct {
 }
 
 var (
-	_ mat64.Matrix = &DiagMatrix{}
-	_ mat64.Matrix = &SubMatrix{}
-	_ mat64.Matrix = &ZeroPadMatrix{}
-	_ mat64.Matrix = &ImageMatrix{}
+	_ mat64.Matrix  = &DiagMatrix{}
+	_ mat64.Mutable = &SubMutable{}
+	_ mat64.Mutable = &ZeroPadMutable{}
+	_ mat64.Mutable = &ImageMatrix{}
 )
 
 func MatFlatten(m mat64.Matrix) []float64 {
@@ -218,13 +218,21 @@ func Summary(m mat64.Matrix) string {
 	return fmt.Sprintf("(%d, %d) max:%.2g min:%.2g ave:%.2g sigma:%.2g", r, c, max, min, ave, sigma)
 }
 
-type SubMatrix struct {
-	m          mat64.Matrix
+func ZeroPad(ms []mat64.Mutable, n int) []mat64.Mutable {
+	ret := make([]mat64.Mutable, len(ms))
+	for i, m := range ms {
+		ret[i] = NewZeroPadMutable(m, n)
+	}
+	return ret
+}
+
+type SubMutable struct {
+	m          mat64.Mutable
 	i, j, r, c int
 }
 
-func NewSubMatrix(m mat64.Matrix, i, j, r, c int) *SubMatrix {
-	return &SubMatrix{
+func NewSubMutable(m mat64.Mutable, i, j, r, c int) *SubMutable {
+	return &SubMutable{
 		m: m,
 		i: i,
 		j: j,
@@ -232,28 +240,31 @@ func NewSubMatrix(m mat64.Matrix, i, j, r, c int) *SubMatrix {
 		c: c,
 	}
 }
-func (m *SubMatrix) At(i, j int) float64 {
+func (m *SubMutable) At(i, j int) float64 {
 	return m.m.At(m.i+i, m.j+j)
 }
-func (m *SubMatrix) Dims() (int, int) {
+func (m *SubMutable) Set(i, j int, x float64) {
+	m.m.Set(m.i+i, m.j+j, x)
+}
+func (m *SubMutable) Dims() (int, int) {
 	return m.r, m.c
 }
-func (m *SubMatrix) T() mat64.Matrix {
-	return NewSubMatrix(m.m.T(), m.j, m.i, m.c, m.r)
+func (m *SubMutable) T() mat64.Matrix {
+	return &TransposeMutable{m}
 }
 
-type ZeroPadMatrix struct {
-	m mat64.Matrix
+type ZeroPadMutable struct {
+	m mat64.Mutable
 	n int
 }
 
-func NewZeroPadMatrix(m mat64.Matrix, n int) *ZeroPadMatrix {
-	return &ZeroPadMatrix{
+func NewZeroPadMutable(m mat64.Mutable, n int) *ZeroPadMutable {
+	return &ZeroPadMutable{
 		m: m,
 		n: n,
 	}
 }
-func (m *ZeroPadMatrix) At(i, j int) float64 {
+func (m *ZeroPadMutable) At(i, j int) float64 {
 	i -= m.n
 	j -= m.n
 	r, c := m.m.Dims()
@@ -262,10 +273,65 @@ func (m *ZeroPadMatrix) At(i, j int) float64 {
 	}
 	return m.m.At(i, j)
 }
-func (m *ZeroPadMatrix) Dims() (int, int) {
+func (m *ZeroPadMutable) Set(i, j int, x float64) {
+	i -= m.n
+	j -= m.n
+	r, c := m.m.Dims()
+	if i < 0 || j < 0 || i >= r || j >= c {
+		return
+	}
+	m.m.Set(i, j, x)
+}
+func (m *ZeroPadMutable) Dims() (int, int) {
 	r, c := m.m.Dims()
 	return r + m.n*2, c + m.n*2
 }
-func (m *ZeroPadMatrix) T() mat64.Matrix {
-	return NewZeroPadMatrix(m.m.T(), m.n)
+func (m *ZeroPadMutable) T() mat64.Matrix {
+	return &TransposeMutable{m}
+}
+
+type ImageMatrix struct {
+	img   ImageStrage
+	n, ch int
+}
+
+func (m *ImageMatrix) At(i, j int) float64 {
+	return m.img.Get(m.n, m.ch, i, j)
+}
+func (m *ImageMatrix) Set(i, j int, x float64) {
+	m.img.Set(m.n, m.ch, i, j, x)
+}
+func (m *ImageMatrix) Dims() (int, int) {
+	shape := m.img.Shape()
+	return shape.row, shape.col
+}
+func (m *ImageMatrix) T() mat64.Matrix {
+	return &TransposeMutable{m}
+}
+
+type TransposeMutable struct {
+	m mat64.Mutable
+}
+
+func (m *TransposeMutable) At(i, j int) float64 {
+	return m.m.At(j, i)
+}
+func (m *TransposeMutable) Set(i, j int, x float64) {
+	m.m.Set(j, i, x)
+}
+func (m *TransposeMutable) Dims() (int, int) {
+	r, c := m.m.Dims()
+	return c, r
+}
+func (m *TransposeMutable) T() mat64.Matrix {
+	return &TransposeMutable{m}
+}
+
+func MutableApply(m mat64.Mutable, f func(i, j int, x float64) float64) {
+	r, c := m.Dims()
+	for i := 0; i < r; i++ {
+		for j := 0; j < c; j++ {
+			m.Set(i, j, f(i, j, m.At(i, j)))
+		}
+	}
 }
