@@ -76,6 +76,9 @@ func (m *Mnist) DumpPng(w io.Writer) error {
 	return m.Images.DumpPng(w)
 }
 
+/*
+NewMnistImage MnistImage オブジェクトをロードする。使い終わったら Close() すること
+*/
 func NewMnistImage(path string) (*MnistImage, error) {
 	m, err := mmap.Open(path)
 	if err != nil {
@@ -187,6 +190,9 @@ func (m *MnistLabel) At(i int) byte {
 	return m.m.At(offset)
 }
 
+/*
+Int32At offsetバイト目から BigEndian で int32 をロードする
+*/
 func Int32At(m *mmap.ReaderAt, offset int64) (int32, error) {
 	buf := make([]byte, 4)
 	err := MustRead(m, offset, buf)

@@ -16,7 +16,7 @@ func main() {
 }
 
 func Main5() error {
-	m, err := NewMnist("./train-images-idx3-ubyte", "./train-labels-idx1-ubyte")
+	m, err := NewMnist("./train-images-idx3-ubyte.idx", "./train-labels-idx1-ubyte.idx")
 	if err != nil {
 		return err
 	}
@@ -46,7 +46,7 @@ func Main5() error {
 }
 
 func Main4() error {
-	m, err := NewMnist("./train-images-idx3-ubyte", "./train-labels-idx1-ubyte")
+	m, err := NewMnist("./train-images-idx3-ubyte.idx", "./train-labels-idx1-ubyte.idx")
 	if err != nil {
 		return err
 	}
@@ -71,7 +71,7 @@ func Main4() error {
 		}
 	}
 
-	m2, err := NewMnist("./t10k-images-idx3-ubyte", "./t10k-labels-idx1-ubyte")
+	m2, err := NewMnist("./t10k-images-idx3-ubyte.idx", "./t10k-labels-idx1-ubyte.idx")
 	if err != nil {
 		return err
 	}
@@ -85,7 +85,7 @@ func Main4() error {
 	return nil
 }
 func Main3() error {
-	m, err := NewMnist("./train-images-idx3-ubyte", "./train-labels-idx1-ubyte")
+	m, err := NewMnist("./train-images-idx3-ubyte.idx", "./train-labels-idx1-ubyte.idx")
 	if err != nil {
 		return err
 	}
@@ -135,7 +135,7 @@ func Main2() error {
 }
 
 func Main() error {
-	m, err := NewMnist("./train-images-idx3-ubyte", "./train-labels-idx1-ubyte")
+	m, err := NewMnist("./train-images-idx3-ubyte.idx", "./train-labels-idx1-ubyte.idx")
 	if err != nil {
 		return err
 	}

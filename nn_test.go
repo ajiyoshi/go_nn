@@ -8,7 +8,7 @@ import (
 )
 
 func TestBackPropGrad(t *testing.T) {
-	m, err := NewMnist("./train-images-idx3-ubyte", "./train-labels-idx1-ubyte")
+	m, err := NewMnist("./train-images-idx3-ubyte.idx", "./train-labels-idx1-ubyte.idx")
 	if err != nil {
 		t.Fatal(err)
 	}
