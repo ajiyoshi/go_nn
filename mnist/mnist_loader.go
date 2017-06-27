@@ -1,43 +1,62 @@
-package main
+package mnist
 
 import (
 	"bytes"
 	"fmt"
 	"github.com/gonum/matrix/mat64"
 	"io"
-	"math/rand"
 )
 
+/*
+TrainBuffer 学習用に読み込むバッファ
+*/
 type TrainBuffer struct {
-	rows  int
-	x_col int
-	t_col int
-	x     []float64
-	t     []float64
+	rows int
+	xCol int
+	tCol int
+	x    []float64
+	t    []float64
 }
 
-func NewTrainBuffer(rows, x_col, t_col int) *TrainBuffer {
+/*
+NewTrainBuffer 学習用バッファを初期化。高速化のために連続領域を確保する。
+rows バッチ学習のために読み込む行数
+xCol 入力1つあたりの次元(mnistなら728)
+tCol ラベル1つあたりの次元(mnistなら10)
+*/
+func NewTrainBuffer(rows, xCol, tCol int) *TrainBuffer {
 	return &TrainBuffer{
-		rows:  rows,
-		x_col: x_col,
-		t_col: t_col,
-		x:     make([]float64, rows*x_col),
-		t:     make([]float64, rows*t_col),
+		rows: rows,
+		xCol: xCol,
+		tCol: tCol,
+		x:    make([]float64, rows*xCol),
+		t:    make([]float64, rows*tCol),
 	}
 }
+
+/*
+LoadX 入力データをバッファにコピー
+*/
 func (buf *TrainBuffer) LoadX(i int, x []byte) error {
-	if len(x) != buf.x_col {
-		return fmt.Errorf("bad size of data expect:%d but got %d", buf.x_col, len(x))
+	if len(x) != buf.xCol {
+		return fmt.Errorf("bad size of data expect:%d but got %d", buf.xCol, len(x))
 	}
-	offset := i * buf.x_col
+	offset := i * buf.xCol
 	LoadVec(x, buf.x[offset:])
 	return nil
 }
+
+/*
+LoadT ラベルをバッファにコピー
+*/
 func (buf *TrainBuffer) LoadT(i int, t byte) {
-	offset := i * buf.t_col
+	offset := i * buf.tCol
 	copy(buf.t[offset:], labels[t])
 }
 
+/*
+Load Mnist からイメージとラベルを読み取ってバッファにコピー
+*/
 func (buf *TrainBuffer) Load(m *Mnist, at []int) {
 	rows := len(at)
 	for i := 0; i < rows; i++ {
@@ -48,28 +67,48 @@ func (buf *TrainBuffer) Load(m *Mnist, at []int) {
 	}
 }
 
+/*
+Dump デバッグ用に、ロードしているMNISTイメージをアスキーアートにして表示
+*/
 func (buf *TrainBuffer) Dump(w io.Writer) {
 	for i := 0; i < buf.rows; i++ {
-		offset := buf.x_col * i
+		offset := buf.xCol * i
 		fmt.Fprintf(w, "%s\n", XToString(buf.x[offset:]))
 	}
 }
 
+/*
+Bake ロードしているイメージとラベルを行列に変換
+*/
 func (buf *TrainBuffer) Bake() (x, t mat64.Matrix) {
-	x = mat64.NewDense(buf.rows, buf.x_col, buf.x)
-	t = mat64.NewDense(buf.rows, buf.t_col, buf.t)
+	x = mat64.NewDense(buf.rows, buf.xCol, buf.x)
+	t = mat64.NewDense(buf.rows, buf.tCol, buf.t)
 	return x, t
 }
 
+/*
+DumpX MNISTイメージとラベルをセットで書き出す
+*/
 func DumpX(w io.Writer, x, t mat64.Matrix, i int) {
 	xbuf := mat64.Row(nil, i, x)
 	tbuf := mat64.Row(nil, i, t)
-	fmt.Fprintf(w, "%d:\n%s\n", Label(tbuf), XToString(xbuf))
+	fmt.Fprintf(w, "%d:\n%s\n", LabelAsNum(tbuf), XToString(xbuf))
 }
 
-func Label(v []float64) int {
-	vec := mat64.NewVector(len(v), v)
-	return ArgmaxV(vec)
+/*
+LabelAsNum ラベルを整数として返す
+*/
+func LabelAsNum(v []float64) int {
+	max := v[0]
+	ret := 0
+
+	for i := 1; i < len(v); i++ {
+		if v[i] > max {
+			max = v[i]
+			ret = i
+		}
+	}
+	return ret
 }
 
 func GetX(data []float64, x, y int) float64 {
@@ -126,20 +165,4 @@ var labels [][]float64 = [][]float64{
 
 func LoadLabel(label byte) *mat64.Vector {
 	return mat64.NewVector(10, labels[label])
-}
-
-func seq(x, n int) []int {
-	ret := make([]int, n)
-	for i := 0; i < n; i++ {
-		ret[i] = x + i
-	}
-	return ret
-}
-
-func randamSeq(n, max int) []int {
-	ret := make([]int, n)
-	for i := 0; i < n; i++ {
-		ret[i] = rand.Intn(max)
-	}
-	return ret
 }
