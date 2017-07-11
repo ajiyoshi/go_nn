@@ -32,7 +32,8 @@ func (nn *TwoLayerNN) Last() LastLayer {
 	return nn.last
 }
 
-const weightInitStd = 0.1
+const WeightInitStd = 0.1
+const weightInitStd = WeightInitStd
 
 func InitAffineLayer(input, output int, op Optimizer) *AffineLayer {
 	w := RandamDense(input, output)

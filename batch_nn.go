@@ -14,9 +14,9 @@ type TwoLayerBatchNN struct {
 
 func NewTwoLayerBatchNN(input_size, hidden_size, output_size int, f OptimizerFactory) *TwoLayerBatchNN {
 	return &TwoLayerBatchNN{
-		affine1: InitAffineLayerB(input_size, hidden_size, f()),
+		affine1: CreateBatchAffineLayer(input_size, hidden_size, f()),
 		leru1:   &BatchReLULayer{},
-		affine2: InitAffineLayerB(hidden_size, output_size, f()),
+		affine2: CreateBatchAffineLayer(hidden_size, output_size, f()),
 		leru2:   &BatchReLULayer{},
 		last:    &BatchSoftMaxWithLoss{},
 	}
@@ -31,7 +31,7 @@ func (nn *TwoLayerBatchNN) Last() BatchLastLayer {
 	return nn.last
 }
 
-func InitAffineLayerB(input, output int, op Optimizer) *BatchAffineLayer {
+func CreateBatchAffineLayer(input, output int, op Optimizer) *BatchAffineLayer {
 	w := RandamDense(input, output)
 	w.Scale(weightInitStd, w)
 	b := mat64.NewVector(output, nil)
@@ -52,13 +52,13 @@ type FiveLayerBatchNN struct {
 
 func NewFiveLayerBatchNN(input_size, hidden_size, output_size int, f OptimizerFactory) *FiveLayerBatchNN {
 	return &FiveLayerBatchNN{
-		affine1: InitAffineLayerB(input_size, hidden_size, f()),
+		affine1: CreateBatchAffineLayer(input_size, hidden_size, f()),
 		leru1:   &BatchReLULayer{},
-		affine2: InitAffineLayerB(hidden_size, hidden_size, f()),
+		affine2: CreateBatchAffineLayer(hidden_size, hidden_size, f()),
 		leru2:   &BatchReLULayer{},
-		affine3: InitAffineLayerB(hidden_size, hidden_size, f()),
+		affine3: CreateBatchAffineLayer(hidden_size, hidden_size, f()),
 		leru3:   &BatchReLULayer{},
-		affine4: InitAffineLayerB(hidden_size, output_size, f()),
+		affine4: CreateBatchAffineLayer(hidden_size, output_size, f()),
 		leru4:   &BatchReLULayer{},
 		last:    &BatchSoftMaxWithLoss{},
 	}

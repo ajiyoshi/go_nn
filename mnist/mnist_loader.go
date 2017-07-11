@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gonum/matrix/mat64"
 	"io"
+	"math/rand"
 )
 
 /*
@@ -107,6 +108,22 @@ func LabelAsNum(v []float64) int {
 			max = v[i]
 			ret = i
 		}
+	}
+	return ret
+}
+
+func Seq(x, n int) []int {
+	ret := make([]int, n)
+	for i := 0; i < n; i++ {
+		ret[i] = x + i
+	}
+	return ret
+}
+
+func RandamSeq(n, max int) []int {
+	ret := make([]int, n)
+	for i := 0; i < n; i++ {
+		ret[i] = rand.Intn(max)
 	}
 	return ret
 }
