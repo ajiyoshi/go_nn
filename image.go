@@ -1,8 +1,10 @@
-package main
+package gocnn
 
 import (
 	"github.com/gonum/matrix/mat64"
 	"reflect"
+
+	"github.com/ajiyoshi/gocnn/matrix"
 )
 
 type ImageStrage interface {
@@ -103,13 +105,13 @@ func Im2col(is ImageStrage, filterR, filterC, stride, pad int) mat64.Matrix {
 	x := 0
 	ret := mat64.NewDense(rows, cols, nil)
 	for n := 0; n < shape.n; n++ {
-		ms := ZeroPad(is.Channels(n), pad)
+		ms := matrix.ZeroPad(is.Channels(n), pad)
 		for i := 0; i < outR; i++ {
 			for j := 0; j < outC; j++ {
 				buf := make([]float64, 0, cols)
 				for _, m := range ms {
-					s := NewSubMutable(m, i*stride, j*stride, filterR, filterC)
-					buf = append(buf, MatFlatten(s)...)
+					s := matrix.NewSubMutable(m, i*stride, j*stride, filterR, filterC)
+					buf = append(buf, matrix.MatFlatten(s)...)
 				}
 				ret.SetRow(x, buf)
 				x++
@@ -127,7 +129,7 @@ func Col2im(m mat64.Matrix, shape *ImageShape, filterR, filterC, stride, pad int
 	ret := NewEmptyStrage(shape)
 	x := 0
 	for n := 0; n < shape.n; n++ {
-		ms := ZeroPad(ret.Channels(n), pad)
+		ms := matrix.ZeroPad(ret.Channels(n), pad)
 
 		for i := 0; i < outR; i++ {
 			for j := 0; j < outC; j++ {
@@ -139,9 +141,9 @@ func Col2im(m mat64.Matrix, shape *ImageShape, filterR, filterC, stride, pad int
 					len := filterR * filterC
 					filter := mat64.NewDense(filterR, filterC, row[offset:offset+len])
 
-					s := NewSubMutable(m, i*stride, j*stride, filterR, filterC)
+					s := matrix.NewSubMutable(m, i*stride, j*stride, filterR, filterC)
 
-					MutableApply(s, func(i, j int, x float64) float64 {
+					matrix.MutableApply(s, func(i, j int, x float64) float64 {
 						return x + filter.At(i, j)
 					})
 				}
@@ -150,4 +152,28 @@ func Col2im(m mat64.Matrix, shape *ImageShape, filterR, filterC, stride, pad int
 	}
 
 	return ret
+}
+
+var (
+	_ mat64.Matrix  = &ImageMatrix{}
+	_ mat64.Mutable = &ImageMatrix{}
+)
+
+type ImageMatrix struct {
+	img   ImageStrage
+	n, ch int
+}
+
+func (m *ImageMatrix) At(i, j int) float64 {
+	return m.img.Get(m.n, m.ch, i, j)
+}
+func (m *ImageMatrix) Set(i, j int, x float64) {
+	m.img.Set(m.n, m.ch, i, j, x)
+}
+func (m *ImageMatrix) Dims() (int, int) {
+	shape := m.img.Shape()
+	return shape.row, shape.col
+}
+func (m *ImageMatrix) T() mat64.Matrix {
+	return matrix.NewTransposeMutable(m)
 }

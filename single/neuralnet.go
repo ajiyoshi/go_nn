@@ -1,21 +1,21 @@
-package main
+package single
 
 import (
 	"github.com/gonum/matrix/mat64"
 )
 
-type NNImpl interface {
+type NeuralNetLayers interface {
 	Layers() []Layer
 	Last() LastLayer
 }
 
-var _ NNImpl = &TwoLayerNN{}
+var _ NeuralNetLayers = &TwoLayerNN{}
 
 type NeuralNet struct {
-	impl NNImpl
+	impl NeuralNetLayers
 }
 
-func NewNeuralNet(imp NNImpl) *NeuralNet {
+func NewNeuralNet(imp NeuralNetLayers) *NeuralNet {
 	return &NeuralNet{imp}
 }
 

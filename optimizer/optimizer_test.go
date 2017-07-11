@@ -1,4 +1,4 @@
-package main
+package optimizer
 
 import (
 	"github.com/gonum/matrix/mat64"

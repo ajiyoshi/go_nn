@@ -1,11 +1,11 @@
-package main
+package batch
 
 import (
 	"github.com/gonum/matrix/mat64"
 	"testing"
 )
 
-func TestBatchAffineLayer(t *testing.T) {
+func TestAffineLayer(t *testing.T) {
 	cases := []struct {
 		title  string
 		W      *mat64.Dense
@@ -18,7 +18,7 @@ func TestBatchAffineLayer(t *testing.T) {
 		dB     mat64.Matrix
 	}{
 		{
-			title: "TestBatchAffineLayer",
+			title: "TestAffineLayer",
 			W: mat64.NewDense(3, 2, []float64{
 				1, 2,
 				3, 4,
@@ -51,7 +51,7 @@ func TestBatchAffineLayer(t *testing.T) {
 			}),
 		},
 		{
-			title: "TestBatchAffineLayer2",
+			title: "TestAffineLayer2",
 			W: mat64.NewDense(3, 2, []float64{
 				1, 2,
 				3, 4,
@@ -94,7 +94,7 @@ func TestBatchAffineLayer(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		l := NewBatchAffineLayer(c.W, c.B, nil)
+		l := NewAffineLayer(c.W, c.B, nil)
 		y := l.Forward(c.x)
 		if !mat64.EqualApprox(y, c.y, 0.01) {
 			t.Fatalf("%s expect %v but got %v", c.title, c.y, y)
@@ -112,7 +112,7 @@ func TestBatchAffineLayer(t *testing.T) {
 	}
 }
 
-func TestBatchReLULayer(t *testing.T) {
+func TestReLULayer(t *testing.T) {
 	cases := []struct {
 		title  string
 		x      mat64.Matrix
@@ -121,7 +121,7 @@ func TestBatchReLULayer(t *testing.T) {
 		expect mat64.Matrix
 	}{
 		{
-			title: "TestBatchReLULayer",
+			title: "TestReLULayer",
 			x: mat64.NewDense(2, 3, []float64{
 				1, -1, 0,
 				-1, 0, -1,
@@ -142,7 +142,7 @@ func TestBatchReLULayer(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		l := &BatchReLULayer{}
+		l := &ReLULayer{}
 		y := l.Forward(c.x)
 		if !mat64.EqualApprox(y, c.y, 0.01) {
 			t.Fatalf("%s expect %v but got %v", c.title, c.y, y)

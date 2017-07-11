@@ -1,4 +1,4 @@
-package main
+package matrix
 
 import (
 	"github.com/gonum/matrix/mat64"

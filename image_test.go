@@ -1,8 +1,10 @@
-package main
+package gocnn
 
 import (
 	"github.com/gonum/matrix/mat64"
 	"testing"
+
+	"github.com/ajiyoshi/gocnn/matrix"
 )
 
 func TestCol2im(t *testing.T) {
@@ -203,7 +205,7 @@ func TestSubMatrix(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		actual := NewSubMutable(c.m, c.i, c.j, c.r, c.c)
+		actual := matrix.NewSubMutable(c.m, c.i, c.j, c.r, c.c)
 
 		if !mat64.EqualApprox(c.expect, actual, 0.01) {
 			t.Fatalf("%s expect\n%.2g but got\n%.2g\n",
@@ -248,7 +250,7 @@ func TestZeroPadMatrix(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		actual := NewZeroPadMutable(c.m, c.n)
+		actual := matrix.NewZeroPadMutable(c.m, c.n)
 
 		if !mat64.EqualApprox(c.expect, actual, 0.01) {
 			t.Fatalf("%s expect %.2g but got %.2g\n",
@@ -289,7 +291,7 @@ func TestTransposeMutable(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		actual := &TransposeMutable{c.m}
+		actual := matrix.NewTransposeMutable(c.m)
 
 		if !mat64.EqualApprox(c.expect, actual, 0.01) {
 			t.Fatalf("%s expect %.2g but got %.2g\n",
