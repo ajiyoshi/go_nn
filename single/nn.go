@@ -2,7 +2,6 @@ package single
 
 import (
 	"github.com/gonum/matrix/mat64"
-	"math/rand"
 
 	"github.com/ajiyoshi/gocnn"
 )
@@ -17,9 +16,9 @@ type TwoLayerNN struct {
 
 func NewTwoLayerNN(input_size, hidden_size, output_size int, f gocnn.OptimizerFactory) *TwoLayerNN {
 	return &TwoLayerNN{
-		affine1: InitAffineLayer(input_size, hidden_size, f()),
+		affine1: NewAffine(input_size, hidden_size, f()),
 		leru1:   &ReLULayer{},
-		affine2: InitAffineLayer(hidden_size, output_size, f()),
+		affine2: NewAffine(hidden_size, output_size, f()),
 		leru2:   &ReLULayer{},
 		last:    &SoftMaxWithLoss{},
 	}
@@ -37,7 +36,7 @@ func (nn *TwoLayerNN) Last() LastLayer {
 const WeightInitStd = 0.1
 const weightInitStd = WeightInitStd
 
-func InitAffineLayer(input, output int, op gocnn.Optimizer) *AffineLayer {
+func NewAffine(input, output int, op gocnn.Optimizer) *AffineLayer {
 	w := gocnn.RandamDense(input, output)
 	w.Scale(weightInitStd, w)
 	b := mat64.NewVector(output, nil)
