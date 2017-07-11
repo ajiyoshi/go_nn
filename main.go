@@ -6,6 +6,8 @@ import (
 	"math/rand"
 	"os"
 	"time"
+
+	"github.com/ajiyoshi/go_nn/mnist"
 )
 
 func main() {
@@ -16,7 +18,7 @@ func main() {
 }
 
 func Main5() error {
-	m, err := NewMnist("./train-images-idx3-ubyte", "./train-labels-idx1-ubyte")
+	m, err := mnist.NewMnist("./train-images-idx3-ubyte.idx", "./train-labels-idx1-ubyte.idx")
 	if err != nil {
 		return err
 	}
@@ -29,7 +31,7 @@ func Main5() error {
 	nn := &BatchNeuralNet{layer}
 
 	rand.Seed(time.Now().Unix())
-	buf := NewTrainBuffer(rows, len, 10)
+	buf := mnist.NewTrainBuffer(rows, len, 10)
 	for i := 0; i < 100; i++ {
 		index := rand.Intn(m.Images.Num - rows)
 		at := seq(index, rows)
@@ -46,7 +48,7 @@ func Main5() error {
 }
 
 func Main4() error {
-	m, err := NewMnist("./train-images-idx3-ubyte", "./train-labels-idx1-ubyte")
+	m, err := mnist.NewMnist("./train-images-idx3-ubyte.idx", "./train-labels-idx1-ubyte.idx")
 	if err != nil {
 		return err
 	}
@@ -60,7 +62,7 @@ func Main4() error {
 	nn := &BatchNeuralNet{layer}
 
 	rand.Seed(time.Now().Unix())
-	buf := NewTrainBuffer(rows, len, 10)
+	buf := mnist.NewTrainBuffer(rows, len, 10)
 	for i := 0; i < 3000; i++ {
 		at := randamSeq(rows, m.Images.Num)
 		buf.Load(m, at)
@@ -71,13 +73,13 @@ func Main4() error {
 		}
 	}
 
-	m2, err := NewMnist("./t10k-images-idx3-ubyte", "./t10k-labels-idx1-ubyte")
+	m2, err := mnist.NewMnist("./t10k-images-idx3-ubyte.idx", "./t10k-labels-idx1-ubyte.idx")
 	if err != nil {
 		return err
 	}
 	defer m2.Close()
 
-	buf = NewTrainBuffer(10000, len, 10)
+	buf = mnist.NewTrainBuffer(10000, len, 10)
 	buf.Load(m2, seq(0, 10000))
 	x, t := buf.Bake()
 	fmt.Printf("test:%f, %f\n", nn.Loss(x, t), nn.Accracy(x, t))
@@ -85,7 +87,7 @@ func Main4() error {
 	return nil
 }
 func Main3() error {
-	m, err := NewMnist("./train-images-idx3-ubyte", "./train-labels-idx1-ubyte")
+	m, err := mnist.NewMnist("./train-images-idx3-ubyte.idx", "./train-labels-idx1-ubyte.idx")
 	if err != nil {
 		return err
 	}
@@ -101,9 +103,9 @@ func Main3() error {
 	for i := 0; i < 100000; i++ {
 		index := rand.Intn(m.Images.Num)
 		data, label := m.At(index)
-		LoadVec(data, buf)
+		mnist.LoadVec(data, buf)
 		x := mat64.NewVector(len, buf)
-		t := LoadLabel(label)
+		t := mnist.LoadLabel(label)
 		loss := nn.Train(x, t)
 		fmt.Printf("%d %f W(%s) dW(%s)\n",
 			i,
@@ -135,7 +137,7 @@ func Main2() error {
 }
 
 func Main() error {
-	m, err := NewMnist("./train-images-idx3-ubyte", "./train-labels-idx1-ubyte")
+	m, err := mnist.NewMnist("./train-images-idx3-ubyte.idx", "./train-labels-idx1-ubyte.idx")
 	if err != nil {
 		return err
 	}
@@ -159,7 +161,7 @@ func Main() error {
 	return nil
 }
 
-func Write(path string, i *Mnist) error {
+func Write(path string, i *mnist.Mnist) error {
 	f, err := os.Create(path)
 	if err != nil {
 		return err
@@ -179,4 +181,20 @@ func or(x1, x2 int) int {
 	} else {
 		return 1
 	}
+}
+
+func seq(x, n int) []int {
+	ret := make([]int, n)
+	for i := 0; i < n; i++ {
+		ret[i] = x + i
+	}
+	return ret
+}
+
+func randamSeq(n, max int) []int {
+	ret := make([]int, n)
+	for i := 0; i < n; i++ {
+		ret[i] = rand.Intn(max)
+	}
+	return ret
 }

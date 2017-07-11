@@ -5,10 +5,12 @@ import (
 	"github.com/gonum/matrix/mat64"
 	"math/rand"
 	"testing"
+
+	"github.com/ajiyoshi/go_nn/mnist"
 )
 
 func TestBackPropGrad(t *testing.T) {
-	m, err := NewMnist("./train-images-idx3-ubyte", "./train-labels-idx1-ubyte")
+	m, err := mnist.NewMnist("./train-images-idx3-ubyte.idx", "./train-labels-idx1-ubyte.idx")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -22,9 +24,9 @@ func TestBackPropGrad(t *testing.T) {
 	buf := make([]float64, len)
 
 	data, label := m.At(rand.Intn(m.Images.Num))
-	LoadVec(data, buf)
+	mnist.LoadVec(data, buf)
 	x := mat64.NewVector(len, buf)
-	l := LoadLabel(label)
+	l := mnist.LoadLabel(label)
 
 	nn.Loss(x, l)
 	nn.BackProp()

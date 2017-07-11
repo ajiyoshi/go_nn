@@ -1,8 +1,7 @@
-package main
+package mnist
 
 import (
 	"github.com/gonum/matrix/mat64"
-	"reflect"
 	"testing"
 )
 
@@ -40,25 +39,31 @@ func TestTrainBuffer(t *testing.T) {
 
 }
 
-func TestSeq(t *testing.T) {
+func TestLabelAsNum(t *testing.T) {
 	cases := []struct {
-		title string
-		x     int
-
-		n int
-
-		expect []int
+		title  string
+		v      []float64
+		expect int
 	}{
 		{
-			title:  "Seq",
-			x:      0,
-			n:      5,
-			expect: []int{0, 1, 2, 3, 4},
+			title:  "label as num",
+			v:      []float64{1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+			expect: 0,
+		},
+		{
+			title:  "label as num",
+			v:      []float64{0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+			expect: 1,
+		},
+		{
+			title:  "label as num",
+			v:      []float64{0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+			expect: 9,
 		},
 	}
 	for _, c := range cases {
-		actual := seq(c.x, c.n)
-		if !reflect.DeepEqual(actual, c.expect) {
+		actual := LabelAsNum(c.v)
+		if actual != c.expect {
 			t.Fatalf("%s expect %v but got %v\n", c.title, c.expect, actual)
 		}
 	}
