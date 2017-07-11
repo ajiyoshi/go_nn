@@ -1,4 +1,4 @@
-package main
+package gocnn
 
 import (
 	"github.com/gonum/matrix/mat64"
@@ -11,6 +11,10 @@ type BatchNeuralNetLayers interface {
 
 type BatchNeuralNet struct {
 	layers BatchNeuralNetLayers
+}
+
+func NewBatchNeuralNet(ls BatchNeuralNetLayers) *BatchNeuralNet {
+	return &BatchNeuralNet{ls}
 }
 
 func (nn *BatchNeuralNet) Layers() []BatchLayer {

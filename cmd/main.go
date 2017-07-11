@@ -7,7 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/ajiyoshi/go_nn/mnist"
+	"github.com/ajiyoshi/gocnn"
+	"github.com/ajiyoshi/gocnn/mnist"
 )
 
 func main() {
@@ -27,8 +28,8 @@ func Main5() error {
 	img := m.Images
 	len := img.Rows * img.Cols
 	rows := 25
-	layer := NewTwoLayerBatchNN(len, 50, 10, NewMomentumFactory(0.1, 0.1))
-	nn := &BatchNeuralNet{layer}
+	layer := gocnn.NewTwoLayerBatchNN(len, 50, 10, gocnn.NewMomentumFactory(0.1, 0.1))
+	nn := gocnn.NewBatchNeuralNet(layer)
 
 	rand.Seed(time.Now().Unix())
 	buf := mnist.NewTrainBuffer(rows, len, 10)
@@ -37,9 +38,9 @@ func Main5() error {
 		at := seq(index, rows)
 		buf.Load(m, at)
 		x, t := buf.Bake()
-		fmt.Printf("x(%d) %s\n", index, Summary(x))
-		fmt.Printf("W(%d) %s\n", index, Summary(layer.affine1.Weight))
-		fmt.Printf("dW(%d) %s\n", index, Summary(layer.affine1.DWeight))
+		fmt.Printf("x(%d) %s\n", index, gocnn.Summary(x))
+		fmt.Printf("W(%d) %s\n", index, gocnn.Summary(layer.affine1.Weight))
+		fmt.Printf("dW(%d) %s\n", index, gocnn.Summary(layer.affine1.DWeight))
 		loss := nn.Train(x, t)
 		fmt.Println(loss)
 	}

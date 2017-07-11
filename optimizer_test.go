@@ -1,4 +1,4 @@
-package main
+package gocnn
 
 import (
 	"github.com/gonum/matrix/mat64"

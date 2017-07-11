@@ -1,4 +1,4 @@
-package main
+package gocnn
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/ajiyoshi/go_nn/mnist"
+	"github.com/ajiyoshi/gocnn/mnist"
 )
 
 func TestBackPropGrad(t *testing.T) {
