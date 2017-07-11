@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/ajiyoshi/gocnn"
+	"github.com/ajiyoshi/gocnn/optimizer"
 )
 
 type Simple2NN struct {
@@ -16,7 +17,7 @@ type Simple2NN struct {
 func NewSimple2NN(w *mat64.Dense) *Simple2NN {
 	_, c := w.Dims()
 	b := mat64.NewVector(c, nil)
-	al := NewAffineLayer(w, b, gocnn.NewMomentum(0.1, 0.1))
+	al := NewAffineLayer(w, b, optimizer.NewMomentum(0.1, 0.1))
 	return &Simple2NN{
 		affine: al,
 		relu:   &ReLULayer{},
@@ -24,7 +25,7 @@ func NewSimple2NN(w *mat64.Dense) *Simple2NN {
 	}
 }
 
-var _ NNImpl = &Simple2NN{}
+var _ NeuralNetLayers = &Simple2NN{}
 
 func (nn *Simple2NN) Layers() []Layer {
 	return []Layer{nn.affine, nn.relu}

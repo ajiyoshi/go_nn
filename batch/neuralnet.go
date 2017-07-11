@@ -3,7 +3,7 @@ package batch
 import (
 	"github.com/gonum/matrix/mat64"
 
-	"github.com/ajiyoshi/gocnn"
+	"github.com/ajiyoshi/gocnn/matrix"
 )
 
 type NeuralNetLayers interface {
@@ -40,8 +40,8 @@ func (nn *NeuralNet) Accracy(x, t mat64.Matrix) float64 {
 	r, _ := x.Dims()
 	ok := 0.0
 	for i := 0; i < r; i++ {
-		a := gocnn.Argmax(mat64.Row(nil, i, y))
-		b := gocnn.Argmax(mat64.Row(nil, i, t))
+		a := matrix.Argmax(mat64.Row(nil, i, y))
+		b := matrix.Argmax(mat64.Row(nil, i, t))
 		if a == b {
 			ok++
 		}

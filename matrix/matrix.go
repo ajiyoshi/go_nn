@@ -1,4 +1,4 @@
-package gocnn
+package matrix
 
 import (
 	"fmt"
@@ -15,7 +15,6 @@ var (
 	_ mat64.Matrix  = &DiagMatrix{}
 	_ mat64.Mutable = &SubMutable{}
 	_ mat64.Mutable = &ZeroPadMutable{}
-	_ mat64.Mutable = &ImageMatrix{}
 )
 
 func MatFlatten(m mat64.Matrix) []float64 {
@@ -291,27 +290,12 @@ func (m *ZeroPadMutable) T() mat64.Matrix {
 	return &TransposeMutable{m}
 }
 
-type ImageMatrix struct {
-	img   ImageStrage
-	n, ch int
-}
-
-func (m *ImageMatrix) At(i, j int) float64 {
-	return m.img.Get(m.n, m.ch, i, j)
-}
-func (m *ImageMatrix) Set(i, j int, x float64) {
-	m.img.Set(m.n, m.ch, i, j, x)
-}
-func (m *ImageMatrix) Dims() (int, int) {
-	shape := m.img.Shape()
-	return shape.row, shape.col
-}
-func (m *ImageMatrix) T() mat64.Matrix {
-	return &TransposeMutable{m}
-}
-
 type TransposeMutable struct {
 	m mat64.Mutable
+}
+
+func NewTransposeMutable(m mat64.Mutable) *TransposeMutable {
+	return &TransposeMutable{m}
 }
 
 func (m *TransposeMutable) At(i, j int) float64 {

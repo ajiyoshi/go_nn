@@ -3,7 +3,8 @@ package single
 import (
 	"github.com/gonum/matrix/mat64"
 
-	"github.com/ajiyoshi/gocnn"
+	"github.com/ajiyoshi/gocnn/matrix"
+	"github.com/ajiyoshi/gocnn/optimizer"
 )
 
 type TwoLayerNN struct {
@@ -14,7 +15,7 @@ type TwoLayerNN struct {
 	last    *SoftMaxWithLoss
 }
 
-func NewTwoLayerNN(input_size, hidden_size, output_size int, f gocnn.OptimizerFactory) *TwoLayerNN {
+func NewTwoLayerNN(input_size, hidden_size, output_size int, f optimizer.OptimizerFactory) *TwoLayerNN {
 	return &TwoLayerNN{
 		affine1: NewAffine(input_size, hidden_size, f()),
 		leru1:   &ReLULayer{},
@@ -36,8 +37,8 @@ func (nn *TwoLayerNN) Last() LastLayer {
 const WeightInitStd = 0.1
 const weightInitStd = WeightInitStd
 
-func NewAffine(input, output int, op gocnn.Optimizer) *AffineLayer {
-	w := gocnn.RandamDense(input, output)
+func NewAffine(input, output int, op optimizer.Optimizer) *AffineLayer {
+	w := matrix.RandamDense(input, output)
 	w.Scale(weightInitStd, w)
 	b := mat64.NewVector(output, nil)
 	return NewAffineLayer(w, b, op)

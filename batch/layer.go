@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"github.com/gonum/matrix/mat64"
 
-	"github.com/ajiyoshi/gocnn"
+	"github.com/ajiyoshi/gocnn/matrix"
+	"github.com/ajiyoshi/gocnn/optimizer"
 )
 
 type Layer interface {
@@ -32,10 +33,10 @@ type AffineLayer struct {
 	DWeight   *mat64.Dense
 	DBias     *mat64.Vector
 	x         mat64.Matrix
-	optimizer gocnn.Optimizer
+	optimizer optimizer.Optimizer
 }
 
-func NewAffineLayer(w *mat64.Dense, b *mat64.Vector, o gocnn.Optimizer) *AffineLayer {
+func NewAffineLayer(w *mat64.Dense, b *mat64.Vector, o optimizer.Optimizer) *AffineLayer {
 	r, c := w.Dims()
 	if c != b.Len() {
 		panic(fmt.Sprintf("cols:%d, b.Len():%d", c, b.Len()))
@@ -51,8 +52,8 @@ func NewAffineLayer(w *mat64.Dense, b *mat64.Vector, o gocnn.Optimizer) *AffineL
 	}
 }
 
-func NewAffine(weight float64, input, output int, op gocnn.Optimizer) *AffineLayer {
-	w := gocnn.RandamDense(input, output)
+func NewAffine(weight float64, input, output int, op optimizer.Optimizer) *AffineLayer {
+	w := matrix.RandamDense(input, output)
 	w.Scale(weight, w)
 	b := mat64.NewVector(output, nil)
 	return NewAffineLayer(w, b, op)
@@ -90,7 +91,7 @@ func (l *AffineLayer) Backward(dout mat64.Matrix) mat64.Matrix {
 	dx.Mul(dout, l.Weight.T())
 
 	l.DWeight.Mul(l.x.T(), dout)
-	gocnn.SumCols(dout, l.DBias)
+	matrix.SumCols(dout, l.DBias)
 
 	return &dx
 }
@@ -141,8 +142,8 @@ func NewSoftMaxWithLoss() *SoftMaxWithLoss {
 
 func (l *SoftMaxWithLoss) Forward(x, t mat64.Matrix) float64 {
 	l.t = t
-	l.y = gocnn.SoftMax(x)
-	l.loss = gocnn.CrossEntropyError(l.y, t)
+	l.y = matrix.SoftMax(x)
+	l.loss = matrix.CrossEntropyError(l.y, t)
 	return l.loss
 }
 

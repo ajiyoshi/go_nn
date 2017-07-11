@@ -7,7 +7,9 @@ import (
 	"testing"
 
 	"github.com/ajiyoshi/gocnn"
+	"github.com/ajiyoshi/gocnn/matrix"
 	"github.com/ajiyoshi/gocnn/mnist"
+	"github.com/ajiyoshi/gocnn/optimizer"
 )
 
 func TestBackPropGrad(t *testing.T) {
@@ -19,7 +21,7 @@ func TestBackPropGrad(t *testing.T) {
 
 	img := m.Images
 	len := img.Rows * img.Cols
-	impl := NewTwoLayerNN(len, 50, 10, gocnn.NewMomentumFactory(0.1, 0.1))
+	impl := NewTwoLayerNN(len, 50, 10, optimizer.NewMomentumFactory(0.1, 0.1))
 	nn := NewNeuralNet(impl)
 
 	buf := make([]float64, len)
@@ -58,7 +60,7 @@ func TestArgmax(t *testing.T) {
 			expect: 2,
 		},
 	} {
-		actual := gocnn.ArgmaxV(c.x)
+		actual := matrix.ArgmaxV(c.x)
 		if actual != c.expect {
 			t.Fatalf("%s expect(%v) but got (%v)", c.title, c.expect, actual)
 		}

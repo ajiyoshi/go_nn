@@ -1,34 +1,36 @@
-package gocnn
+package batch
 
-/*
 import (
 	"github.com/gonum/matrix/mat64"
 	"testing"
+
+	"github.com/ajiyoshi/gocnn"
+	"github.com/ajiyoshi/gocnn/optimizer"
 )
 
 type BatchNNSimple struct {
-	affine *BatchAffineLayer
-	relu   *BatchReLULayer
-	last   *BatchSoftMaxWithLoss
+	affine *AffineLayer
+	relu   *ReLULayer
+	last   *SoftMaxWithLoss
 }
 
 func NewBatchNNSimple(w *mat64.Dense) *BatchNNSimple {
 	_, c := w.Dims()
 	b := mat64.NewVector(c, nil)
-	al := NewBatchAffineLayer(w, b, NewMomentum(0.1, 0.1))
+	al := NewAffineLayer(w, b, optimizer.NewMomentum(0.1, 0.1))
 	return &BatchNNSimple{
 		affine: al,
-		relu:   &BatchReLULayer{},
-		last:   &BatchSoftMaxWithLoss{},
+		relu:   NewReLU(),
+		last:   NewSoftMaxWithLoss(),
 	}
 }
 
-var _ BatchNeuralNetLayers = &BatchNNSimple{}
+var _ NeuralNetLayers = &BatchNNSimple{}
 
-func (nn *BatchNNSimple) Layers() []BatchLayer {
-	return []BatchLayer{nn.affine, nn.relu}
+func (nn *BatchNNSimple) Layers() []Layer {
+	return []Layer{nn.affine, nn.relu}
 }
-func (nn *BatchNNSimple) Last() BatchLastLayer {
+func (nn *BatchNNSimple) Last() LastLayer {
 	return nn.last
 }
 
@@ -55,12 +57,12 @@ func TestBatchNNSimple(t *testing.T) {
 		},
 	} {
 		layers := NewBatchNNSimple(c.W)
-		nn := &BatchNeuralNet{layers}
+		nn := NewNeuralNet(layers)
 
 		f := func(w *mat64.Dense) float64 {
 			return nn.Loss(c.x, c.t)
 		}
-		dW := NumericalGradM(f, c.W)
+		dW := gocnn.NumericalGradM(f, c.W)
 		if !mat64.EqualApprox(c.dW, dW, 0.01) {
 			t.Fatalf("%s expect(%v) but got (%v)", c.title, c.dW, dW)
 		}
@@ -74,10 +76,9 @@ func TestBatchNNSimple(t *testing.T) {
 		g := func(w *mat64.Vector) float64 {
 			return nn.Loss(c.x, c.t)
 		}
-		dB := NumericalGrad(g, layers.affine.Bias)
+		dB := gocnn.NumericalGrad(g, layers.affine.Bias)
 		if !mat64.EqualApprox(layers.affine.DBias, dB, 0.01) {
 			t.Fatalf("%s expect(%v) but got (%v)", c.title, layers.affine.DBias, dB)
 		}
 	}
 }
-*/
