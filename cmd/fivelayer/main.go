@@ -64,13 +64,13 @@ func run() error {
 
 type FiveLayerNN struct {
 	affine1 *batch.AffineLayer
-	leru1   *batch.ReLULayer
+	relu1   *batch.ReLULayer
 	affine2 *batch.AffineLayer
-	leru2   *batch.ReLULayer
+	relu2   *batch.ReLULayer
 	affine3 *batch.AffineLayer
-	leru3   *batch.ReLULayer
+	relu3   *batch.ReLULayer
 	affine4 *batch.AffineLayer
-	leru4   *batch.ReLULayer
+	relu4   *batch.ReLULayer
 	last    *batch.SoftMaxWithLoss
 }
 
@@ -81,20 +81,20 @@ var _ batch.NeuralNetLayers = (*FiveLayerNN)(nil)
 func NewFiveLayerNN(input_size, hidden_size, output_size int, f optimizer.OptimizerFactory) *FiveLayerNN {
 	return &FiveLayerNN{
 		affine1: batch.NewAffine(WeightInitStd, input_size, hidden_size, f()),
-		leru1:   batch.NewReLU(),
+		relu1:   batch.NewReLU(),
 		affine2: batch.NewAffine(WeightInitStd, hidden_size, hidden_size, f()),
-		leru2:   batch.NewReLU(),
+		relu2:   batch.NewReLU(),
 		affine3: batch.NewAffine(WeightInitStd, hidden_size, hidden_size, f()),
-		leru3:   batch.NewReLU(),
+		relu3:   batch.NewReLU(),
 		affine4: batch.NewAffine(WeightInitStd, hidden_size, output_size, f()),
-		leru4:   batch.NewReLU(),
+		relu4:   batch.NewReLU(),
 		last:    batch.NewSoftMaxWithLoss(),
 	}
 }
 
 func (nn *FiveLayerNN) Layers() []batch.Layer {
 	return []batch.Layer{
-		nn.affine1, nn.leru1, nn.affine2, nn.leru2, nn.affine3, nn.leru3, nn.affine4, nn.leru4,
+		nn.affine1, nn.relu1, nn.affine2, nn.relu2, nn.affine3, nn.relu3, nn.affine4, nn.relu4,
 	}
 }
 func (nn *FiveLayerNN) Last() batch.LastLayer {

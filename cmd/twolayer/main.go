@@ -55,9 +55,9 @@ func run() error {
 
 type TwoLayerNN struct {
 	affine1 *batch.AffineLayer
-	leru1   *batch.ReLULayer
+	relu1   *batch.ReLULayer
 	affine2 *batch.AffineLayer
-	leru2   *batch.ReLULayer
+	relu2   *batch.ReLULayer
 	last    *batch.SoftMaxWithLoss
 }
 
@@ -66,16 +66,16 @@ const WeightInitStd = 0.1
 func NewTwoLayerNN(input_size, hidden_size, output_size int, f optimizer.OptimizerFactory) *TwoLayerNN {
 	return &TwoLayerNN{
 		affine1: batch.NewAffine(WeightInitStd, input_size, hidden_size, f()),
-		leru1:   batch.NewReLU(),
+		relu1:   batch.NewReLU(),
 		affine2: batch.NewAffine(WeightInitStd, hidden_size, output_size, f()),
-		leru2:   batch.NewReLU(),
+		relu2:   batch.NewReLU(),
 		last:    batch.NewSoftMaxWithLoss(),
 	}
 }
 
 func (nn *TwoLayerNN) Layers() []batch.Layer {
 	return []batch.Layer{
-		nn.affine1, nn.leru1, nn.affine2, nn.leru2,
+		nn.affine1, nn.relu1, nn.affine2, nn.relu2,
 	}
 }
 func (nn *TwoLayerNN) Last() batch.LastLayer {
