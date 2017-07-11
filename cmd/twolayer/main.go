@@ -5,9 +5,10 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/ajiyoshi/gocnn"
 	"github.com/ajiyoshi/gocnn/batch"
+	"github.com/ajiyoshi/gocnn/matrix"
 	"github.com/ajiyoshi/gocnn/mnist"
+	"github.com/ajiyoshi/gocnn/optimizer"
 )
 
 func init() {
@@ -32,7 +33,7 @@ func run() error {
 	rows := 25
 	hidden := 50
 	output := 10
-	optimizer := gocnn.NewMomentumFactory(0.1, 0.1)
+	optimizer := optimizer.NewMomentumFactory(0.1, 0.1)
 	layer := NewTwoLayerNN(len, hidden, output, optimizer)
 	nn := batch.NewNeuralNet(layer)
 
@@ -42,9 +43,9 @@ func run() error {
 		at := mnist.Seq(index, rows)
 		buf.Load(m, at)
 		x, t := buf.Bake()
-		fmt.Printf("x(%d) %s\n", index, gocnn.Summary(x))
-		fmt.Printf("W(%d) %s\n", index, gocnn.Summary(layer.affine1.Weight))
-		fmt.Printf("dW(%d) %s\n", index, gocnn.Summary(layer.affine1.DWeight))
+		fmt.Printf("x(%d) %s\n", index, matrix.Summary(x))
+		fmt.Printf("W(%d) %s\n", index, matrix.Summary(layer.affine1.Weight))
+		fmt.Printf("dW(%d) %s\n", index, matrix.Summary(layer.affine1.DWeight))
 		loss := nn.Train(x, t)
 		fmt.Println(loss)
 	}
@@ -62,7 +63,7 @@ type TwoLayerNN struct {
 
 const WeightInitStd = 0.1
 
-func NewTwoLayerNN(input_size, hidden_size, output_size int, f gocnn.OptimizerFactory) *TwoLayerNN {
+func NewTwoLayerNN(input_size, hidden_size, output_size int, f optimizer.OptimizerFactory) *TwoLayerNN {
 	return &TwoLayerNN{
 		affine1: batch.NewAffine(WeightInitStd, input_size, hidden_size, f()),
 		leru1:   batch.NewReLU(),

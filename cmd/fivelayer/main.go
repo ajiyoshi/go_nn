@@ -5,9 +5,9 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/ajiyoshi/gocnn"
 	"github.com/ajiyoshi/gocnn/batch"
 	"github.com/ajiyoshi/gocnn/mnist"
+	"github.com/ajiyoshi/gocnn/optimizer"
 )
 
 func init() {
@@ -31,7 +31,7 @@ func run() error {
 	input := m.Images.Rows * m.Images.Cols
 	hidden := 100
 	output := 10
-	optimizer := gocnn.NewMomentumFactory(0.1, 0.1)
+	optimizer := optimizer.NewMomentumFactory(0.1, 0.1)
 
 	layer := NewFiveLayerNN(input, hidden, output, optimizer)
 	nn := batch.NewNeuralNet(layer)
@@ -78,7 +78,7 @@ const WeightInitStd = 0.1
 
 var _ batch.NeuralNetLayers = (*FiveLayerNN)(nil)
 
-func NewFiveLayerNN(input_size, hidden_size, output_size int, f gocnn.OptimizerFactory) *FiveLayerNN {
+func NewFiveLayerNN(input_size, hidden_size, output_size int, f optimizer.OptimizerFactory) *FiveLayerNN {
 	return &FiveLayerNN{
 		affine1: batch.NewAffine(WeightInitStd, input_size, hidden_size, f()),
 		leru1:   batch.NewReLU(),
