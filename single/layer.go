@@ -1,8 +1,10 @@
-package gocnn
+package single
 
 import (
 	"fmt"
 	"github.com/gonum/matrix/mat64"
+
+	"github.com/ajiyoshi/gocnn"
 )
 
 type Layer interface {
@@ -29,10 +31,10 @@ type AffineLayer struct {
 	DWeight   *mat64.Dense
 	DBias     *mat64.Vector
 	x         *mat64.Vector
-	optimizer Optimizer
+	optimizer gocnn.Optimizer
 }
 
-func NewAffineLayer(w *mat64.Dense, b *mat64.Vector, o Optimizer) *AffineLayer {
+func NewAffineLayer(w *mat64.Dense, b *mat64.Vector, o gocnn.Optimizer) *AffineLayer {
 	r, c := w.Dims()
 	if c != b.Len() {
 		panic(fmt.Sprintf("cols:%d, b.Len():%d", c, b.Len()))
@@ -83,8 +85,8 @@ type ReLULayer struct {
 }
 
 func (l *ReLULayer) Forward(x *mat64.Vector) *mat64.Vector {
-	l.mask = VecClone(x)
-	VecApply(l.mask, func(val float64) float64 {
+	l.mask = gocnn.VecClone(x)
+	gocnn.VecApply(l.mask, func(val float64) float64 {
 		if val < 0 {
 			return 0
 		} else {
@@ -109,9 +111,9 @@ type SoftMaxWithLoss struct {
 }
 
 func (l *SoftMaxWithLoss) Forward(x, t *mat64.Vector) float64 {
-	l.t = VecClone(t)
-	l.y = SoftMaxV(x)
-	l.loss = CrossEntropyError(l.y, t)
+	l.t = gocnn.VecClone(t)
+	l.y = gocnn.SoftMaxV(x)
+	l.loss = gocnn.CrossEntropyError(l.y, t)
 	return l.loss
 }
 

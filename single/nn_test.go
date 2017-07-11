@@ -1,4 +1,4 @@
-package gocnn
+package single
 
 import (
 	"fmt"
@@ -6,11 +6,12 @@ import (
 	"math/rand"
 	"testing"
 
+	"github.com/ajiyoshi/gocnn"
 	"github.com/ajiyoshi/gocnn/mnist"
 )
 
 func TestBackPropGrad(t *testing.T) {
-	m, err := mnist.NewMnist("./train-images-idx3-ubyte.idx", "./train-labels-idx1-ubyte.idx")
+	m, err := mnist.NewMnist("../train-images-idx3-ubyte.idx", "../train-labels-idx1-ubyte.idx")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -18,7 +19,7 @@ func TestBackPropGrad(t *testing.T) {
 
 	img := m.Images
 	len := img.Rows * img.Cols
-	impl := NewTwoLayerNN(len, 50, 10, NewMomentumFactory(0.1, 0.1))
+	impl := NewTwoLayerNN(len, 50, 10, gocnn.NewMomentumFactory(0.1, 0.1))
 	nn := NewNeuralNet(impl)
 
 	buf := make([]float64, len)
@@ -34,7 +35,7 @@ func TestBackPropGrad(t *testing.T) {
 	f := func(w *mat64.Dense) float64 {
 		return nn.Loss(x, l)
 	}
-	dW := NumericalGradM(f, impl.affine1.Weight)
+	dW := gocnn.NumericalGradM(f, impl.affine1.Weight)
 
 	sub := mat64.DenseCopyOf(impl.affine1.DWeight)
 	sub.Sub(sub, dW)
@@ -57,7 +58,7 @@ func TestArgmax(t *testing.T) {
 			expect: 2,
 		},
 	} {
-		actual := ArgmaxV(c.x)
+		actual := gocnn.ArgmaxV(c.x)
 		if actual != c.expect {
 			t.Fatalf("%s expect(%v) but got (%v)", c.title, c.expect, actual)
 		}
