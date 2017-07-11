@@ -51,7 +51,7 @@ func NewAffineLayer(w *mat64.Dense, b *mat64.Vector, o gocnn.Optimizer) *AffineL
 	}
 }
 
-func InitAffineLayer(weight float64, input, output int, op gocnn.Optimizer) *AffineLayer {
+func NewAffine(weight float64, input, output int, op gocnn.Optimizer) *AffineLayer {
 	w := gocnn.RandamDense(input, output)
 	w.Scale(weight, w)
 	b := mat64.NewVector(output, nil)
@@ -104,6 +104,10 @@ type ReLULayer struct {
 	mask *mat64.Dense
 }
 
+func NewReLU() *ReLULayer {
+	return &ReLULayer{}
+}
+
 func (l *ReLULayer) Forward(x mat64.Matrix) mat64.Matrix {
 	r, c := x.Dims()
 	l.mask = mat64.NewDense(r, c, nil)
@@ -129,6 +133,10 @@ type SoftMaxWithLoss struct {
 	loss float64
 	y    mat64.Matrix
 	t    mat64.Matrix
+}
+
+func NewSoftMaxWithLoss() *SoftMaxWithLoss {
+	return &SoftMaxWithLoss{}
 }
 
 func (l *SoftMaxWithLoss) Forward(x, t mat64.Matrix) float64 {
