@@ -1,5 +1,6 @@
 package gocnn
 
+/*
 import (
 	"github.com/gonum/matrix/mat64"
 )
@@ -72,3 +73,4 @@ func (nn *FiveLayerBatchNN) Layers() []BatchLayer {
 func (nn *FiveLayerBatchNN) Last() BatchLastLayer {
 	return nn.last
 }
+*/
