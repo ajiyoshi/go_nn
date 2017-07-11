@@ -4,7 +4,7 @@ import (
 	"github.com/gonum/matrix/mat64"
 	"testing"
 
-	"github.com/ajiyoshi/gocnn"
+	"github.com/ajiyoshi/gocnn/matrix"
 	"github.com/ajiyoshi/gocnn/optimizer"
 )
 
@@ -62,7 +62,7 @@ func TestBatchNNSimple(t *testing.T) {
 		f := func(w *mat64.Dense) float64 {
 			return nn.Loss(c.x, c.t)
 		}
-		dW := gocnn.NumericalGradM(f, c.W)
+		dW := matrix.NumericalGradM(f, c.W)
 		if !mat64.EqualApprox(c.dW, dW, 0.01) {
 			t.Fatalf("%s expect(%v) but got (%v)", c.title, c.dW, dW)
 		}
@@ -76,7 +76,7 @@ func TestBatchNNSimple(t *testing.T) {
 		g := func(w *mat64.Vector) float64 {
 			return nn.Loss(c.x, c.t)
 		}
-		dB := gocnn.NumericalGrad(g, layers.affine.Bias)
+		dB := matrix.NumericalGrad(g, layers.affine.Bias)
 		if !mat64.EqualApprox(layers.affine.DBias, dB, 0.01) {
 			t.Fatalf("%s expect(%v) but got (%v)", c.title, layers.affine.DBias, dB)
 		}

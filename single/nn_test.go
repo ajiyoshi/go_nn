@@ -6,7 +6,6 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/ajiyoshi/gocnn"
 	"github.com/ajiyoshi/gocnn/matrix"
 	"github.com/ajiyoshi/gocnn/mnist"
 	"github.com/ajiyoshi/gocnn/optimizer"
@@ -37,7 +36,7 @@ func TestBackPropGrad(t *testing.T) {
 	f := func(w *mat64.Dense) float64 {
 		return nn.Loss(x, l)
 	}
-	dW := gocnn.NumericalGradM(f, impl.affine1.Weight)
+	dW := matrix.NumericalGradM(f, impl.affine1.Weight)
 
 	sub := mat64.DenseCopyOf(impl.affine1.DWeight)
 	sub.Sub(sub, dW)
