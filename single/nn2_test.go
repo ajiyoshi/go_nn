@@ -1,8 +1,10 @@
-package gocnn
+package single
 
 import (
 	"github.com/gonum/matrix/mat64"
 	"testing"
+
+	"github.com/ajiyoshi/gocnn"
 )
 
 type Simple2NN struct {
@@ -14,7 +16,7 @@ type Simple2NN struct {
 func NewSimple2NN(w *mat64.Dense) *Simple2NN {
 	_, c := w.Dims()
 	b := mat64.NewVector(c, nil)
-	al := NewAffineLayer(w, b, NewMomentum(0.1, 0.1))
+	al := NewAffineLayer(w, b, gocnn.NewMomentum(0.1, 0.1))
 	return &Simple2NN{
 		affine: al,
 		relu:   &ReLULayer{},
@@ -59,7 +61,7 @@ func TestSimple2(t *testing.T) {
 		f := func(w *mat64.Dense) float64 {
 			return nn.Loss(c.x, c.t)
 		}
-		dW := NumericalGradM(f, c.W)
+		dW := gocnn.NumericalGradM(f, c.W)
 		if !mat64.EqualApprox(c.dW, dW, 0.01) {
 			t.Fatalf("%s expect(%v) but got (%v)", c.title, c.dW, dW)
 		}
@@ -73,7 +75,7 @@ func TestSimple2(t *testing.T) {
 		g := func(w *mat64.Vector) float64 {
 			return nn.Loss(c.x, c.t)
 		}
-		dB := NumericalGrad(g, impl.affine.Bias)
+		dB := gocnn.NumericalGrad(g, impl.affine.Bias)
 		if !mat64.EqualApprox(impl.affine.DBias, dB, 0.01) {
 			t.Fatalf("%s expect(%v) but got (%v)", c.title, impl.affine.DBias, dB)
 		}
