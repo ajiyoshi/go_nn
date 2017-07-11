@@ -38,18 +38,8 @@ const WeightInitStd = 0.1
 const weightInitStd = WeightInitStd
 
 func InitAffineLayer(input, output int, op gocnn.Optimizer) *AffineLayer {
-	w := RandamDense(input, output)
+	w := gocnn.RandamDense(input, output)
 	w.Scale(weightInitStd, w)
 	b := mat64.NewVector(output, nil)
 	return NewAffineLayer(w, b, op)
-}
-
-func RandamDense(raws, cols int) *mat64.Dense {
-	ret := mat64.NewDense(raws, cols, nil)
-	for r := 0; r < raws; r++ {
-		for c := 0; c < cols; c++ {
-			ret.Set(r, c, rand.NormFloat64())
-		}
-	}
-	return ret
 }

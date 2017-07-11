@@ -51,6 +51,13 @@ func NewAffineLayer(w *mat64.Dense, b *mat64.Vector, o gocnn.Optimizer) *AffineL
 	}
 }
 
+func InitAffineLayer(weight float64, input, output int, op gocnn.Optimizer) *AffineLayer {
+	w := gocnn.RandamDense(input, output)
+	w.Scale(weight, w)
+	b := mat64.NewVector(output, nil)
+	return NewAffineLayer(w, b, op)
+}
+
 // x : (N, dimIN)
 // W : (dimIN, dimOut)
 // ret : (N, dimOut)

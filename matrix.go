@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gonum/matrix/mat64"
 	"math"
+	"math/rand"
 )
 
 type DiagMatrix struct {
@@ -334,4 +335,14 @@ func MutableApply(m mat64.Mutable, f func(i, j int, x float64) float64) {
 			m.Set(i, j, f(i, j, m.At(i, j)))
 		}
 	}
+}
+
+func RandamDense(raws, cols int) *mat64.Dense {
+	ret := mat64.NewDense(raws, cols, nil)
+	for r := 0; r < raws; r++ {
+		for c := 0; c < cols; c++ {
+			ret.Set(r, c, rand.NormFloat64())
+		}
+	}
+	return ret
 }
