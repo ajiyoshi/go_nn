@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	"fmt"
 	"github.com/gonum/matrix/mat64"
@@ -199,3 +200,4 @@ func randamSeq(n, max int) []int {
 	}
 	return ret
 }
+*/
