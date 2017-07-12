@@ -140,9 +140,7 @@ func Col2im(m mat64.Matrix, shape *ImageShape, filterR, filterC, stride, pad int
 					offset := ch * filterR * filterC
 					len := filterR * filterC
 					filter := mat64.NewDense(filterR, filterC, row[offset:offset+len])
-
 					s := matrix.NewSubMutable(m, i*stride, j*stride, filterR, filterC)
-
 					matrix.MutableApply(s, func(i, j int, x float64) float64 {
 						return x + filter.At(i, j)
 					})
