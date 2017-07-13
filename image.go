@@ -36,11 +36,6 @@ type ImageShape struct {
 	row int
 }
 
-type IndexStrage struct {
-	s     *SimpleStrage
-	index []int
-}
-
 func NewEmptyStrage(shape *ImageShape) *SimpleStrage {
 	return &SimpleStrage{
 		shape: *shape,
