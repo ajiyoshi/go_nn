@@ -21,8 +21,7 @@ type ImageStrage interface {
 }
 
 type SimpleStrage struct {
-	shape ImageShape
-	data  []float64
+	data Array4D
 }
 
 var (
@@ -36,18 +35,14 @@ type ImageShape struct {
 	row int
 }
 
-func NewEmptyStrage(shape *ImageShape) *SimpleStrage {
-	return &SimpleStrage{
-		shape: *shape,
-		data:  make([]float64, shape.n*shape.ch*shape.row*shape.col),
-	}
+func NewEmptyStrage(s *ImageShape) *SimpleStrage {
+	data := make([]float64, s.n*s.ch*s.row*s.col)
+	return NewImages(*s, data)
 }
 
-func NewImages(shape ImageShape, data []float64) *SimpleStrage {
-	return &SimpleStrage{
-		shape: shape,
-		data:  data,
-	}
+func NewImages(s ImageShape, data []float64) *SimpleStrage {
+	array := NewNormal4D(Shape4D{s.n, s.ch, s.row, s.col}, data)
+	return NewSimpleStrage(array)
 }
 
 func NewReshaped(s ImageShape, m mat64.Matrix) *SimpleStrage {
@@ -60,15 +55,17 @@ func NewReshaped(s ImageShape, m mat64.Matrix) *SimpleStrage {
 		data = append(data, buf...)
 	}
 
-	return &SimpleStrage{
-		shape: s,
-		data:  data,
-	}
+	return NewSimpleStrage(NewNormal4D(Shape4D{s.n, s.ch, s.row, s.col}, data))
+}
+
+func NewSimpleStrage(a Array4D) *SimpleStrage {
+	return &SimpleStrage{a}
 }
 
 func (img *SimpleStrage) Equal(that ImageStrage) bool {
 	shape := that.Shape()
-	if !reflect.DeepEqual(&img.shape, &shape) {
+	s := img.Shape()
+	if !reflect.DeepEqual(&s, &shape) {
 		return false
 	}
 	for n := 0; n < shape.n; n++ {
@@ -86,19 +83,15 @@ func (img *SimpleStrage) Equal(that ImageStrage) bool {
 	return true
 }
 func (img *SimpleStrage) Shape() ImageShape {
-	return img.shape
+	s := img.data.Shape()
+	return ImageShape{n: s.d0, ch: s.d1, row: s.d2, col: s.d3}
 }
 
 func (img *SimpleStrage) Get(n, ch, r, c int) float64 {
-	s := img.Shape()
-	index := n*(s.ch*s.row*s.col) + ch*s.row*s.col + r*s.col + c
-	return img.data[index]
+	return img.data.Get(n, ch, r, c)
 }
 func (img *SimpleStrage) Set(n, ch, r, c int, v float64) {
-	s := img.Shape()
-	index := n*(s.ch*s.row*s.col) + ch*s.row*s.col + r*s.col + c
-	//fmt.Printf("(%d, %d, %d, %d)[%d] %f <- %f\n", n, ch, r, c, index, img.data[index], v)
-	img.data[index] = v
+	img.data.Set(n, ch, r, c, v)
 }
 
 func (img *SimpleStrage) String() string {
@@ -115,8 +108,9 @@ func (img *SimpleStrage) String() string {
 }
 
 func (img *SimpleStrage) Channels(n int) []mat64.Mutable {
-	ret := make([]mat64.Mutable, img.shape.ch)
-	for i := 0; i < img.shape.ch; i++ {
+	shape := img.Shape()
+	ret := make([]mat64.Mutable, shape.ch)
+	for i := 0; i < shape.ch; i++ {
 		ret[i] = img.ChannelMatrix(n, i)
 	}
 	return ret
