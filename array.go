@@ -1,64 +1,92 @@
 package gocnn
 
-type Shape4D struct {
-	d0, d1, d2, d3 int
+type ShapeND struct {
+	ds []int
 }
-type Array4D interface {
-	Get(i0, i1, i2, i3 int) float64
-	Set(i0, i1, i2, i3 int, x float64)
-	Shape() Shape4D
+type ArrayND interface {
+	Get(is ...int) float64
+	Set(x float64, is ...int)
+	Shape() *ShapeND
 }
 
 var (
-	_ Array4D = (*Normal4D)(nil)
+	_ ArrayND = (*NormalND)(nil)
 )
 
-type Normal4D struct {
+type NormalND struct {
 	data  []float64
-	index Indexer
+	index IndexerND
 }
 
-type Indexer interface {
-	At(i0, i1, i2, i3 int) int
-	Shape() Shape4D
+type IndexerND interface {
+	At(is ...int) int
+	Shape() *ShapeND
 }
 
-type NormalIndexer struct {
-	shape Shape4D
+type NormalIndexerND struct {
+	shape *ShapeND
 }
 
-func NewNormalIndexer(s Shape4D) *NormalIndexer {
-	return &NormalIndexer{s}
+func NewNormalIndexerND(s *ShapeND) *NormalIndexerND {
+	return &NormalIndexerND{s}
 }
-func (i *NormalIndexer) At(i0, i1, i2, i3 int) int {
+func (i *NormalIndexerND) At(is ...int) int {
 	s := i.Shape()
-	return i0*(s.d1*s.d2*s.d3) + i1*(s.d2*s.d3) + i2*s.d3 + i3
+	return s.Index(is...)
 }
-func (i NormalIndexer) Shape() Shape4D {
+func (i NormalIndexerND) Shape() *ShapeND {
 	return i.shape
 }
 
-func NewNormal4D(s Shape4D, data []float64) *Normal4D {
-	return &Normal4D{
-		index: NewNormalIndexer(s),
+func NewNormalND(s *ShapeND, data []float64) *NormalND {
+	return &NormalND{
+		index: NewNormalIndexerND(s),
 		data:  data,
 	}
 }
 
-func Index(i0, i1, i2, i3 int, s Shape4D) int {
-	return i0*(s.d1*s.d2*s.d3) + i1*(s.d2*s.d3) + i2*s.d3 + i3
+func NewShapeND(ds ...int) *ShapeND {
+	return &ShapeND{
+		ds: ds,
+	}
 }
 
-func (x *Normal4D) Get(i0, i1, i2, i3 int) float64 {
-	i := x.index.At(i0, i1, i2, i3)
+func (s *ShapeND) Index(is ...int) int {
+	ret := 0
+	ds := s.Coefficient()
+	for i, x := range is {
+		ret += ds[i] * x
+	}
+	return ret
+}
+func (s *ShapeND) Coefficient() []int {
+	/*
+		[]int{ (d1*d2*...*dn), (d2*...*dn), ... dn, 1 }
+	*/
+	buf := s.ds
+	length := len(buf)
+	ret := make([]int, length)
+	acc := 1
+	for i := 0; i < length; i++ {
+		ret[length-i-1] = acc
+		//末尾を掛ける
+		acc *= buf[len(buf)-1]
+		//末尾を削除
+		buf = buf[:len(buf)-1]
+	}
+	return ret
+}
+
+func (x *NormalND) Get(is ...int) float64 {
+	i := x.index.At(is...)
 	return x.data[i]
 }
 
-func (x *Normal4D) Set(i0, i1, i2, i3 int, v float64) {
-	i := x.index.At(i0, i1, i2, i3)
+func (x *NormalND) Set(v float64, is ...int) {
+	i := x.index.At(is...)
 	x.data[i] = v
 }
 
-func (x *Normal4D) Shape() Shape4D {
+func (x *NormalND) Shape() *ShapeND {
 	return x.index.Shape()
 }

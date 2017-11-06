@@ -21,7 +21,7 @@ type ImageStrage interface {
 }
 
 type SimpleStrage struct {
-	data Array4D
+	data ArrayND
 }
 
 var (
@@ -41,7 +41,7 @@ func NewEmptyStrage(s *ImageShape) *SimpleStrage {
 }
 
 func NewImages(s ImageShape, data []float64) *SimpleStrage {
-	array := NewNormal4D(Shape4D{s.n, s.ch, s.row, s.col}, data)
+	array := NewNormalND(NewShapeND(s.n, s.ch, s.row, s.col), data)
 	return NewSimpleStrage(array)
 }
 
@@ -55,10 +55,10 @@ func NewReshaped(s ImageShape, m mat64.Matrix) *SimpleStrage {
 		data = append(data, buf...)
 	}
 
-	return NewSimpleStrage(NewNormal4D(Shape4D{s.n, s.ch, s.row, s.col}, data))
+	return NewSimpleStrage(NewNormalND(NewShapeND(s.n, s.ch, s.row, s.col), data))
 }
 
-func NewSimpleStrage(a Array4D) *SimpleStrage {
+func NewSimpleStrage(a ArrayND) *SimpleStrage {
 	return &SimpleStrage{a}
 }
 
@@ -84,14 +84,14 @@ func (img *SimpleStrage) Equal(that ImageStrage) bool {
 }
 func (img *SimpleStrage) Shape() ImageShape {
 	s := img.data.Shape()
-	return ImageShape{n: s.d0, ch: s.d1, row: s.d2, col: s.d3}
+	return ImageShape{n: s.ds[0], ch: s.ds[1], row: s.ds[2], col: s.ds[3]}
 }
 
 func (img *SimpleStrage) Get(n, ch, r, c int) float64 {
 	return img.data.Get(n, ch, r, c)
 }
 func (img *SimpleStrage) Set(n, ch, r, c int, v float64) {
-	img.data.Set(n, ch, r, c, v)
+	img.data.Set(v, n, ch, r, c)
 }
 
 func (img *SimpleStrage) String() string {
