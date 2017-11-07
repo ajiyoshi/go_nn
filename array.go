@@ -1,45 +1,60 @@
 package gocnn
 
-type NormalNDShape struct {
-	ds []int
-}
-type NDShape interface {
-	Index(is ...int) int
-	AsSlice() []int
-}
 type NDArray interface {
 	Get(is ...int) float64
 	Set(x float64, is ...int)
 	Shape() NDShape
 }
+type NDShape interface {
+	Index(is ...int) int
+	AsSlice() []int
+}
 
 var (
-	_ NDArray = (*NormalND)(nil)
-	_ NDShape = (*NormalNDShape)(nil)
+	_ NDArray = (*ndArray)(nil)
+	_ NDShape = (*ndShape)(nil)
 )
 
-type NormalND struct {
+type ndArray struct {
 	data  []float64
 	shape NDShape
 }
+type ndShape struct {
+	ds []int
+}
 
-func NewNormalND(s *NormalNDShape, data []float64) *NormalND {
-	return &NormalND{
+func NewNDArray(s NDShape, data []float64) *ndArray {
+	return &ndArray{
 		shape: s,
 		data:  data,
 	}
 }
+func (x *ndArray) Get(is ...int) float64 {
+	i := x.shape.Index(is...)
+	return x.data[i]
+}
 
-func NewShapeND(ds ...int) *NormalNDShape {
-	return &NormalNDShape{
+func (x *ndArray) Set(v float64, is ...int) {
+	i := x.shape.Index(is...)
+	x.data[i] = v
+}
+func (x *ndArray) At(i int) NDArray {
+	return nil
+}
+
+func (x *ndArray) Shape() NDShape {
+	return x.shape
+}
+
+func NewNDShape(ds ...int) *ndShape {
+	return &ndShape{
 		ds: ds,
 	}
 }
-
-func (s *NormalNDShape) AsSlice() []int {
+func (s *ndShape) AsSlice() []int {
 	return s.ds
 }
-func (s *NormalNDShape) Index(is ...int) int {
+func (s *ndShape) Index(is ...int) int {
 	ret := 0
 	ds := s.Coefficient()
 	for i, x := range is {
@@ -47,7 +62,7 @@ func (s *NormalNDShape) Index(is ...int) int {
 	}
 	return ret
 }
-func (s *NormalNDShape) Coefficient() []int {
+func (s *ndShape) Coefficient() []int {
 	/*
 		[]int{ (d1*d2*...*dn), (d2*...*dn), ... dn, 1 }
 	*/
@@ -63,21 +78,4 @@ func (s *NormalNDShape) Coefficient() []int {
 		buf = buf[:len(buf)-1]
 	}
 	return ret
-}
-
-func (x *NormalND) Get(is ...int) float64 {
-	i := x.shape.Index(is...)
-	return x.data[i]
-}
-
-func (x *NormalND) Set(v float64, is ...int) {
-	i := x.shape.Index(is...)
-	x.data[i] = v
-}
-func (x *NormalND) At(i int) NDArray {
-	return nil
-}
-
-func (x *NormalND) Shape() NDShape {
-	return x.shape
 }

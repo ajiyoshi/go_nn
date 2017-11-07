@@ -5,7 +5,7 @@ import (
 )
 
 func TestNDArray(t *testing.T) {
-	a := NewNormalND(NewShapeND(1, 2, 3, 4),
+	a := NewNDArray(NewNDShape(1, 2, 3, 4),
 		[]float64{
 			1, 2, 3, 4,
 			5, 6, 7, 8,

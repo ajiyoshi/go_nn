@@ -41,7 +41,7 @@ func NewEmptyStrage(s *ImageShape) *SimpleStrage {
 }
 
 func NewImages(s ImageShape, data []float64) *SimpleStrage {
-	array := NewNormalND(NewShapeND(s.n, s.ch, s.row, s.col), data)
+	array := NewNDArray(NewNDShape(s.n, s.ch, s.row, s.col), data)
 	return NewSimpleStrage(array)
 }
 
@@ -55,7 +55,7 @@ func NewReshaped(s ImageShape, m mat64.Matrix) *SimpleStrage {
 		data = append(data, buf...)
 	}
 
-	return NewSimpleStrage(NewNormalND(NewShapeND(s.n, s.ch, s.row, s.col), data))
+	return NewSimpleStrage(NewNDArray(NewNDShape(s.n, s.ch, s.row, s.col), data))
 }
 
 func NewSimpleStrage(a NDArray) *SimpleStrage {
