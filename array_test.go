@@ -55,7 +55,7 @@ func TestNDArrayGet(t *testing.T) {
 	}
 
 }
-func TestArrayString(t *testing.T) {
+func TestNDArrayString(t *testing.T) {
 	cases := []struct {
 		msg    string
 		input  NDArray
