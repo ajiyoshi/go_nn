@@ -1,13 +1,23 @@
 package gocnn
 
+import (
+	"fmt"
+	"reflect"
+	"strings"
+)
+
 type NDArray interface {
 	Get(is ...int) float64
 	Set(x float64, is ...int)
 	Shape() NDShape
+	Slice(i int) NDArray
+	String() string
+	DeepEqual(NDArray) bool
 }
 type NDShape interface {
 	Index(is ...int) int
 	AsSlice() []int
+	Equals(NDShape) bool
 }
 
 var (
@@ -20,7 +30,11 @@ type ndArray struct {
 	shape NDShape
 }
 type ndShape struct {
-	ds []int
+	dims []int
+}
+type ndSubShape struct {
+	fixed int
+	shape NDShape
 }
 
 func NewNDArray(s NDShape, data []float64) *ndArray {
@@ -45,28 +59,60 @@ func (x *ndArray) At(i int) NDArray {
 func (x *ndArray) Shape() NDShape {
 	return x.shape
 }
+func (x *ndArray) Slice(i int) NDArray {
+	return &ndArray{
+		shape: NewSubShape(i, x.shape),
+		data:  x.data,
+	}
+}
+func (x *ndArray) String() string {
+	s := x.shape.AsSlice()
+	if len(s) == 1 {
+		tmp := make([]string, s[0])
+		for i := 0; i < len(tmp); i++ {
+			tmp[i] = fmt.Sprintf("%f", x.Get(i))
+		}
+		return fmt.Sprintf("[%s]", strings.Join(tmp, ", "))
+	}
+
+	tmp := make([]string, s[0])
+	for i := 0; i < s[0]; i++ {
+		sub := x.Slice(i)
+		tmp[i] = sub.String()
+	}
+	return fmt.Sprintf("[%s]", strings.Join(tmp, ",\n"))
+}
+func (x *ndArray) DeepEqual(y NDArray) bool {
+	if !x.shape.Equals(y.Shape()) {
+		return false
+	}
+	return x.String() == y.String()
+}
 
 func NewNDShape(ds ...int) *ndShape {
 	return &ndShape{
-		ds: ds,
+		dims: ds,
 	}
 }
 func (s *ndShape) AsSlice() []int {
-	return s.ds
+	return s.dims
 }
 func (s *ndShape) Index(is ...int) int {
 	ret := 0
-	ds := s.Coefficient()
+	coef := s.Coefficient()
 	for i, x := range is {
-		ret += ds[i] * x
+		ret += coef[i] * x
 	}
 	return ret
+}
+func (s *ndShape) Equals(y NDShape) bool {
+	return reflect.DeepEqual(s.dims, y.AsSlice())
 }
 func (s *ndShape) Coefficient() []int {
 	/*
 		[]int{ (d1*d2*...*dn), (d2*...*dn), ... dn, 1 }
 	*/
-	buf := s.ds
+	buf := s.dims
 	length := len(buf)
 	ret := make([]int, length)
 	acc := 1
@@ -78,4 +124,30 @@ func (s *ndShape) Coefficient() []int {
 		buf = buf[:len(buf)-1]
 	}
 	return ret
+}
+
+func prod(xs []int) int {
+	ret := 1
+	for _, x := range xs {
+		ret *= x
+	}
+	return ret
+}
+
+func NewSubShape(i int, s NDShape) *ndSubShape {
+	slice := s.AsSlice()
+	cdr := slice[1:]
+	return &ndSubShape{
+		fixed: i * prod(cdr),
+		shape: NewNDShape(cdr...),
+	}
+}
+func (s *ndSubShape) AsSlice() []int {
+	return s.shape.AsSlice()
+}
+func (s *ndSubShape) Index(is ...int) int {
+	return s.fixed + s.shape.Index(is...)
+}
+func (s *ndSubShape) Equals(y NDShape) bool {
+	return reflect.DeepEqual(s.shape.AsSlice(), y.AsSlice())
 }
