@@ -1,57 +1,45 @@
 package gocnn
 
-type ShapeND struct {
+type NormalNDShape struct {
 	ds []int
 }
-type ArrayND interface {
+type NDShape interface {
+	Index(is ...int) int
+	AsSlice() []int
+}
+type NDArray interface {
 	Get(is ...int) float64
 	Set(x float64, is ...int)
-	Shape() *ShapeND
+	Shape() NDShape
 }
 
 var (
-	_ ArrayND = (*NormalND)(nil)
+	_ NDArray = (*NormalND)(nil)
+	_ NDShape = (*NormalNDShape)(nil)
 )
 
 type NormalND struct {
 	data  []float64
-	index IndexerND
+	shape NDShape
 }
 
-type IndexerND interface {
-	At(is ...int) int
-	Shape() *ShapeND
-}
-
-type NormalIndexerND struct {
-	shape *ShapeND
-}
-
-func NewNormalIndexerND(s *ShapeND) *NormalIndexerND {
-	return &NormalIndexerND{s}
-}
-func (i *NormalIndexerND) At(is ...int) int {
-	s := i.Shape()
-	return s.Index(is...)
-}
-func (i NormalIndexerND) Shape() *ShapeND {
-	return i.shape
-}
-
-func NewNormalND(s *ShapeND, data []float64) *NormalND {
+func NewNormalND(s *NormalNDShape, data []float64) *NormalND {
 	return &NormalND{
-		index: NewNormalIndexerND(s),
+		shape: s,
 		data:  data,
 	}
 }
 
-func NewShapeND(ds ...int) *ShapeND {
-	return &ShapeND{
+func NewShapeND(ds ...int) *NormalNDShape {
+	return &NormalNDShape{
 		ds: ds,
 	}
 }
 
-func (s *ShapeND) Index(is ...int) int {
+func (s *NormalNDShape) AsSlice() []int {
+	return s.ds
+}
+func (s *NormalNDShape) Index(is ...int) int {
 	ret := 0
 	ds := s.Coefficient()
 	for i, x := range is {
@@ -59,7 +47,7 @@ func (s *ShapeND) Index(is ...int) int {
 	}
 	return ret
 }
-func (s *ShapeND) Coefficient() []int {
+func (s *NormalNDShape) Coefficient() []int {
 	/*
 		[]int{ (d1*d2*...*dn), (d2*...*dn), ... dn, 1 }
 	*/
@@ -78,15 +66,18 @@ func (s *ShapeND) Coefficient() []int {
 }
 
 func (x *NormalND) Get(is ...int) float64 {
-	i := x.index.At(is...)
+	i := x.shape.Index(is...)
 	return x.data[i]
 }
 
 func (x *NormalND) Set(v float64, is ...int) {
-	i := x.index.At(is...)
+	i := x.shape.Index(is...)
 	x.data[i] = v
 }
+func (x *NormalND) At(i int) NDArray {
+	return nil
+}
 
-func (x *NormalND) Shape() *ShapeND {
-	return x.index.Shape()
+func (x *NormalND) Shape() NDShape {
+	return x.shape
 }

@@ -21,7 +21,7 @@ type ImageStrage interface {
 }
 
 type SimpleStrage struct {
-	data ArrayND
+	data NDArray
 }
 
 var (
@@ -58,7 +58,7 @@ func NewReshaped(s ImageShape, m mat64.Matrix) *SimpleStrage {
 	return NewSimpleStrage(NewNormalND(NewShapeND(s.n, s.ch, s.row, s.col), data))
 }
 
-func NewSimpleStrage(a ArrayND) *SimpleStrage {
+func NewSimpleStrage(a NDArray) *SimpleStrage {
 	return &SimpleStrage{a}
 }
 
@@ -83,8 +83,8 @@ func (img *SimpleStrage) Equal(that ImageStrage) bool {
 	return true
 }
 func (img *SimpleStrage) Shape() ImageShape {
-	s := img.data.Shape()
-	return ImageShape{n: s.ds[0], ch: s.ds[1], row: s.ds[2], col: s.ds[3]}
+	s := img.data.Shape().AsSlice()
+	return ImageShape{n: s[0], ch: s[1], row: s[2], col: s[3]}
 }
 
 func (img *SimpleStrage) Get(n, ch, r, c int) float64 {

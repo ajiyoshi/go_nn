@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestArrayND(t *testing.T) {
+func TestNDArray(t *testing.T) {
 	a := NewNormalND(NewShapeND(1, 2, 3, 4),
 		[]float64{
 			1, 2, 3, 4,
@@ -154,4 +154,6 @@ func TestArrayND(t *testing.T) {
 		}
 	}
 
+}
+func TestTransposedArray(t *testing.T) {
 }
