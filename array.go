@@ -10,7 +10,8 @@ type NDArray interface {
 	Get(is ...int) float64
 	Set(x float64, is ...int)
 	Shape() NDShape
-	Slice(i int) NDArray
+	Segment(i int) NDArray
+	Transpose(is ...int) NDArray
 	String() string
 	DeepEqual(NDArray) bool
 }
@@ -23,6 +24,8 @@ type NDShape interface {
 var (
 	_ NDArray = (*ndArray)(nil)
 	_ NDShape = (*ndShape)(nil)
+	_ NDShape = (*ndSubShape)(nil)
+	_ NDShape = (*ndTrShape)(nil)
 )
 
 type ndArray struct {
@@ -33,7 +36,11 @@ type ndShape struct {
 	dims []int
 }
 type ndSubShape struct {
-	fixed int
+	base  int
+	shape NDShape
+}
+type ndTrShape struct {
+	table []int
 	shape NDShape
 }
 
@@ -59,9 +66,15 @@ func (x *ndArray) At(i int) NDArray {
 func (x *ndArray) Shape() NDShape {
 	return x.shape
 }
-func (x *ndArray) Slice(i int) NDArray {
+func (x *ndArray) Segment(i int) NDArray {
 	return &ndArray{
-		shape: NewSubShape(i, x.shape),
+		shape: NewSubShape(x.shape, i),
+		data:  x.data,
+	}
+}
+func (x *ndArray) Transpose(is ...int) NDArray {
+	return &ndArray{
+		shape: NewTrShape(x.shape, is...),
 		data:  x.data,
 	}
 }
@@ -77,7 +90,7 @@ func (x *ndArray) String() string {
 
 	tmp := make([]string, s[0])
 	for i := 0; i < s[0]; i++ {
-		sub := x.Slice(i)
+		sub := x.Segment(i)
 		tmp[i] = sub.String()
 	}
 	return fmt.Sprintf("[%s]", strings.Join(tmp, ",\n"))
@@ -134,11 +147,11 @@ func prod(xs []int) int {
 	return ret
 }
 
-func NewSubShape(i int, s NDShape) *ndSubShape {
+func NewSubShape(s NDShape, i int) *ndSubShape {
 	slice := s.AsSlice()
 	cdr := slice[1:]
 	return &ndSubShape{
-		fixed: i * prod(cdr),
+		base:  i * prod(cdr),
 		shape: NewNDShape(cdr...),
 	}
 }
@@ -146,8 +159,34 @@ func (s *ndSubShape) AsSlice() []int {
 	return s.shape.AsSlice()
 }
 func (s *ndSubShape) Index(is ...int) int {
-	return s.fixed + s.shape.Index(is...)
+	return s.base + s.shape.Index(is...)
 }
 func (s *ndSubShape) Equals(y NDShape) bool {
 	return reflect.DeepEqual(s.shape.AsSlice(), y.AsSlice())
+}
+
+func NewTrShape(s NDShape, is ...int) *ndTrShape {
+	if len(s.AsSlice()) != len(is) {
+		panic("dimention mismatch")
+	}
+	return &ndTrShape{
+		table: is,
+		shape: s,
+	}
+}
+func Convert(table, is []int) []int {
+	ret := make([]int, len(is))
+	for i, x := range table {
+		ret[i] = is[x]
+	}
+	return ret
+}
+func (s *ndTrShape) AsSlice() []int {
+	return Convert(s.table, s.shape.AsSlice())
+}
+func (s *ndTrShape) Equals(that NDShape) bool {
+	return reflect.DeepEqual(s.shape.AsSlice(), that.AsSlice())
+}
+func (s *ndTrShape) Index(is ...int) int {
+	return s.shape.Index(Convert(s.table, is)...)
 }
