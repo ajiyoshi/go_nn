@@ -47,7 +47,7 @@ func (c *Convolution) Forward(x ImageStrage) ImageStrage {
 		return c.Bias.At(j, 0) + val
 	}, &ret)
 
-	return Transform(&ret, &ImageShape{xs.n, ws.n, outRow, outCol})
+	return Transform(&ret, &ImageShape{n: xs.n, ch: ws.n, col: outRow, row: outCol})
 }
 
 /*

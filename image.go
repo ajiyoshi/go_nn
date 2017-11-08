@@ -3,7 +3,6 @@ package gocnn
 import (
 	"bytes"
 	"fmt"
-	"reflect"
 
 	"github.com/gonum/matrix/mat64"
 
@@ -63,24 +62,7 @@ func NewSimpleStrage(a NDArray) *SimpleStrage {
 }
 
 func (img *SimpleStrage) Equal(that ImageStrage) bool {
-	shape := that.Shape()
-	s := img.Shape()
-	if !reflect.DeepEqual(&s, &shape) {
-		return false
-	}
-	for n := 0; n < shape.n; n++ {
-		for ch := 0; ch < shape.ch; ch++ {
-			for row := 0; row < shape.row; row++ {
-				for col := 0; col < shape.col; col++ {
-					if img.Get(n, ch, row, col) != that.Get(n, ch, row, col) {
-						return false
-					}
-				}
-			}
-		}
-	}
-
-	return true
+	return mat64.EqualApprox(img.Matrix(), that.Matrix(), 0.001)
 }
 func (img *SimpleStrage) Shape() ImageShape {
 	s := img.data.Shape()

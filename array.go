@@ -73,7 +73,7 @@ func (x *ndArray) String() string {
 	if len(s) == 1 {
 		tmp := make([]string, s[0])
 		for i := 0; i < len(tmp); i++ {
-			tmp[i] = fmt.Sprintf("%f", x.Get(i))
+			tmp[i] = fmt.Sprintf("%.2f", x.Get(i))
 		}
 		return fmt.Sprintf("[%s]", strings.Join(tmp, ", "))
 	}
