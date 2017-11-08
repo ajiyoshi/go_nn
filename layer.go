@@ -45,8 +45,26 @@ func (c *Convolution) Forward(x ImageStrage) ImageStrage {
 	//m.reshape(N, out_h, out_w, -1).transpose(0, 3, 1, 2) 相当の処理を行う
 	data := DumpMatrix(&ret)
 	shape := NewNDShape(xs.n, outRow, outCol, ws.n)
-	array := NewNDArray(shape, data).Transpose(0, 3, 1, 2)
-	return NewSimpleStrage(array)
+	return NewSimpleStrage(NewNDArray(shape, data)).Transpose(0, 3, 1, 2)
+}
+
+func (c *Convolution) Backword(dout ImageStrage) ImageStrage {
+	/*
+		FN, C, FH, FW = self.W.shape
+		dout = dout.transpose(0,2,3,1).reshape(-1, FN)
+
+		self.db = np.sum(dout, axis=0)
+		self.dW = np.dot(self.col.T, dout)
+		self.dW = self.dW.transpose(1, 0).reshape(FN, C, FH, FW)
+
+		dcol = np.dot(dout, self.col_W.T)
+		dx = col2im(dcol, self.x.shape, FH, FW, self.stride, self.pad)
+
+		return dx
+	*/
+	_ = dout.Transpose(0, 2, 3, 1)
+
+	return nil
 }
 
 /*
