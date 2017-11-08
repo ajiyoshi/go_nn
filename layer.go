@@ -1,6 +1,7 @@
 package gocnn
 
 import (
+	"fmt"
 	"github.com/gonum/matrix/mat64"
 
 	"github.com/ajiyoshi/gocnn/optimizer"
@@ -62,7 +63,9 @@ func (c *Convolution) Backword(dout ImageStrage) ImageStrage {
 
 		return dx
 	*/
-	_ = dout.Transpose(0, 2, 3, 1)
+	m := dout.Transpose(0, 2, 3, 1)
+	fmt.Printf("%v\n", m.Shape())
+	fmt.Printf("%g\n", mat64.Formatted(m.ToMatrix(4, 2)))
 
 	return nil
 }

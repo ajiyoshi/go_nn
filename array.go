@@ -14,6 +14,7 @@ type NDArray interface {
 	Transpose(is ...int) NDArray
 	String() string
 	DeepEqual(NDArray) bool
+	Iterator() NDArrayIterator
 }
 
 type NDShape []int
@@ -90,6 +91,17 @@ func (x *ndArray) DeepEqual(y NDArray) bool {
 		return false
 	}
 	return x.String() == y.String()
+}
+func (x *ndArray) Iterator() NDArrayIterator {
+	coef := Coefficient(x.Shape())
+	max := coef[0]
+	return &ndArrayIterator{
+		i:     0,
+		array: x,
+		coef:  coef,
+		max:   max,
+		buf:   make([]int, len(x.Shape())),
+	}
 }
 
 func NewNDShape(dim ...int) NDShape {
@@ -182,10 +194,32 @@ func Coefficient(dims []int) []int {
 	return ret
 }
 
-func Convert(table, is []int) []int {
-	ret := make([]int, len(is))
-	for i, x := range table {
-		ret[i] = is[x]
+type ndArrayIterator struct {
+	i     int
+	array NDArray
+	max   int
+	coef  []int
+	buf   []int
+}
+type NDArrayIterator interface {
+	OK() bool
+	Value() float64
+	Index() []int
+	Next()
+}
+
+func (itr *ndArrayIterator) OK() bool {
+	return itr.i < itr.max
+}
+func (itr *ndArrayIterator) Value() float64 {
+	return itr.array.Get(itr.Index()...)
+}
+func (itr *ndArrayIterator) Next() {
+	itr.i++
+	for i, c := range itr.coef {
+		itr.buf[i] = itr.i / c % itr.array.Shape()[i]
 	}
-	return ret
+}
+func (itr *ndArrayIterator) Index() []int {
+	return itr.buf
 }

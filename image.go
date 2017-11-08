@@ -18,6 +18,7 @@ type ImageStrage interface {
 	String() string
 	Equal(ImageStrage) bool
 	Transpose(is ...int) ImageStrage
+	ToMatrix(row, col int) mat64.Matrix
 }
 
 type SimpleStrage struct {
@@ -112,6 +113,17 @@ func (img *SimpleStrage) ChannelMatrix(n, ch int) *ChannelMatrix {
 
 func (img *SimpleStrage) Matrix() mat64.Matrix {
 	return &ImageMatrix{img}
+}
+func (img *SimpleStrage) ToMatrix(row, col int) mat64.Matrix {
+	ret := mat64.NewDense(row, col, make([]float64, col*row))
+	itr := img.data.Iterator()
+	for j := 0; j < row; j++ {
+		for i := 0; i < col; i++ {
+			ret.Set(j, i, itr.Value())
+			itr.Next()
+		}
+	}
+	return ret
 }
 
 func (img *SimpleStrage) Transpose(is ...int) ImageStrage {
