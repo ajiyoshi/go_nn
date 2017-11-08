@@ -93,6 +93,40 @@ func TestNDArrayString(t *testing.T) {
 			}),
 			expect: "[[1.000000, 2.000000, 3.000000],\n[4.000000, 5.000000, 6.000000]]",
 		},
+		{
+			msg: "(2, 3).Transpose(1, 0)",
+			input: NewNDArray(NewNDShape(2, 3), []float64{
+				1, 2, 3,
+				4, 5, 6,
+			}).Transpose(1, 0),
+			expect: "[[1.000000, 4.000000],\n[2.000000, 5.000000],\n[3.000000, 6.000000]]",
+		},
+		{
+			msg: "(2, 3, 4).Transpose(1, 2, 0).Segment(0)",
+			input: NewNDArray(NewNDShape(2, 3, 4), []float64{
+				1, 2, 3, 4,
+				5, 6, 7, 8,
+				9, 10, 11, 12,
+
+				13, 14, 15, 16,
+				17, 18, 19, 20,
+				21, 22, 23, 24,
+			}).Transpose(2, 0, 1).Segment(0),
+			expect: "[[1.000000, 5.000000, 9.000000],\n[13.000000, 17.000000, 21.000000]]",
+		},
+		{
+			msg: "(2, 3, 4).Segment(0).Transpose(1, 0)",
+			input: NewNDArray(NewNDShape(2, 3, 4), []float64{
+				1, 2, 3, 4,
+				5, 6, 7, 8,
+				9, 10, 11, 12,
+
+				13, 14, 15, 16,
+				17, 18, 19, 20,
+				21, 22, 23, 24,
+			}).Segment(0).Transpose(1, 0),
+			expect: "[[1.000000, 5.000000, 9.000000],\n[2.000000, 6.000000, 10.000000],\n[3.000000, 7.000000, 11.000000],\n[4.000000, 8.000000, 12.000000]]",
+		},
 	}
 
 	for _, c := range cases {
@@ -105,27 +139,27 @@ func TestNDArrayString(t *testing.T) {
 func TestTransposedShape(t *testing.T) {
 	cases := []struct {
 		msg    string
-		shape  NDShape
+		input  NDArray
 		index  []int
 		expect NDShape
 	}{
 		{
 			msg:    "(2, 3).Traspose(1, 0)",
-			shape:  NewNDShape(2, 3),
+			input:  NewNDArray(NewNDShape(2, 3), make([]float64, 6)),
 			index:  []int{1, 0},
 			expect: NewNDShape(3, 2),
 		},
 		{
 			msg:    "(2, 3, 4).Traspose(1, 2, 0)",
-			shape:  NewNDShape(2, 3, 4),
+			input:  NewNDArray(NewNDShape(2, 3, 4), make([]float64, 24)),
 			index:  []int{1, 2, 0},
 			expect: NewNDShape(3, 4, 2),
 		},
 	}
 
 	for _, c := range cases {
-		actual := NewTrShape(c.shape, c.index...)
-		if actual.Equals(c.expect) {
+		actual := c.input.Transpose(c.index...).Shape()
+		if !c.expect.Equals(actual) {
 			t.Fatalf("(%s) expect %v but actual %v", c.msg, c.expect, actual)
 		}
 	}
@@ -150,72 +184,92 @@ func TestNDArrayTranspose(t *testing.T) {
 				3, 6,
 			}),
 		},
-		/*
-			{
-				msg: "(2, 3, 4).Traspose(1, 2, 0)",
-				array: NewNDArray(NewNDShape(2, 3, 4), []float64{
-					1, 2, 3, 4,
-					5, 6, 7, 8,
-					9, 10, 11, 12,
+		{
+			msg: "(2, 3, 4).Traspose(1, 2, 0)",
+			array: NewNDArray(NewNDShape(2, 3, 4), []float64{
+				1, 2, 3, 4,
+				5, 6, 7, 8,
+				9, 10, 11, 12,
 
-					13, 14, 15, 16,
-					17, 18, 19, 20,
-					21, 22, 23, 34,
-				}),
-				index: []int{1, 2, 0},
-				expect: NewNDArray(NewNDShape(3, 2, 4), []float64{
-					1, 13,
-					2, 14,
-					3, 15,
-					4, 16,
+				13, 14, 15, 16,
+				17, 18, 19, 20,
+				21, 22, 23, 24,
+			}),
+			index: []int{1, 2, 0},
+			expect: NewNDArray(NewNDShape(3, 4, 2), []float64{
+				1, 13,
+				2, 14,
+				3, 15,
+				4, 16,
 
-					5, 17,
-					6, 18,
-					7, 19,
-					8, 20,
+				5, 17,
+				6, 18,
+				7, 19,
+				8, 20,
 
-					9, 21,
-					10, 22,
-					11, 23,
-					12, 24,
-				}),
-			},
-		*/
+				9, 21,
+				10, 22,
+				11, 23,
+				12, 24,
+			}),
+		},
 	}
 
 	for _, c := range cases {
 		actual := c.array.Transpose(c.index...)
-		if actual.Get(0, 0) != c.array.Get(0, 0) {
-			t.Fail()
+		if !actual.DeepEqual(c.expect) {
+			t.Fatalf("expect %v\n%v got %v\n%v", c.expect.Shape(), c.expect, actual.Shape(), actual)
 		}
-		if actual.Get(0, 1) != c.array.Get(1, 0) {
-			t.Fail()
+	}
+}
+
+func TestIndexConvert(t *testing.T) {
+
+	cases := []struct {
+		msg    string
+		index  []int
+		table  []int
+		expect []int
+	}{
+		{msg: "index{4, 5, 6} by{0, 1, 2} -> index{4, 5, 6}",
+			index: []int{4, 5, 6}, table: []int{0, 1, 2}, expect: []int{4, 5, 6}},
+		{msg: "index{4, 5, 6} by{0, 2, 1} -> index{4, 6, 5}",
+			index: []int{4, 5, 6}, table: []int{0, 2, 1}, expect: []int{4, 6, 5}},
+
+		{msg: "index{4, 5, 6} by{1, 0, 2} -> index{5, 4, 6}",
+			index: []int{4, 5, 6}, table: []int{1, 0, 2}, expect: []int{5, 4, 6}},
+		{msg: "index{4, 5, 6} by{1, 2, 0} -> index{6, 4, 5}",
+			index: []int{4, 5, 6}, table: []int{1, 2, 0}, expect: []int{6, 4, 5}},
+
+		{msg: "index{4, 5, 6} by{2, 0, 1} -> index{5, 6, 4}",
+			index: []int{4, 5, 6}, table: []int{2, 0, 1}, expect: []int{5, 6, 4}},
+		{msg: "index{4, 5, 6} by{2, 1, 0} -> index{6, 5, 4}",
+			index: []int{4, 5, 6}, table: []int{2, 1, 0}, expect: []int{6, 5, 4}},
+	}
+	for _, c := range cases {
+		actual := indexConvert(c.index, c.table)
+		if !reflect.DeepEqual(c.expect, actual) {
+			t.Fatalf("(%s) expect %v but actual %v", c.msg, c.expect, actual)
 		}
-		if actual.Get(1, 0) != c.array.Get(0, 1) {
-			t.Fail()
-		}
-		if actual.Get(1, 1) != c.array.Get(1, 1) {
-			t.Fail()
-		}
-		if actual.Get(2, 0) != c.array.Get(0, 2) {
-			t.Fail()
-		}
-		if actual.Get(2, 1) != c.array.Get(1, 2) {
-			t.Fail()
-		}
-		{
-			act := actual.Shape().AsSlice()
-			exp := []int{3, 2}
-			if !reflect.DeepEqual(act, exp) {
-				t.Fatalf("expect \n%v got \n%v", exp, act)
-			}
-		}
-		{
-			act := actual.Segment(0).Get(1)
-			exp := 4.0
-			if act != exp {
-				//t.Fatalf("expect \n%v got \n%v", exp, act)
-			}
+	}
+}
+
+func TestShapeConvert(t *testing.T) {
+	cases := []struct {
+		msg    string
+		shape  NDShape
+		table  []int
+		expect []int
+	}{
+		{msg: "shape{4, 5, 6} by{1, 2, 0} -> shape{5, 6, 4}",
+			shape: []int{4, 5, 6}, table: []int{1, 2, 0}, expect: []int{5, 6, 4}},
+		{msg: "shape{4, 5, 6} by{0, 1, 2} -> shape{4, 5, 6}",
+			shape: []int{4, 5, 6}, table: []int{0, 1, 2}, expect: []int{4, 5, 6}},
+	}
+	for _, c := range cases {
+		actual := shapeConvert(c.shape, c.table)
+		if !actual.Equals(c.expect) {
+			t.Fatalf("(%s) expect %v but actual %v", c.msg, c.expect, actual)
 		}
 	}
 }

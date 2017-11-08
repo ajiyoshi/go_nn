@@ -83,7 +83,7 @@ func (img *SimpleStrage) Equal(that ImageStrage) bool {
 	return true
 }
 func (img *SimpleStrage) Shape() ImageShape {
-	s := img.data.Shape().AsSlice()
+	s := img.data.Shape()
 	return ImageShape{n: s[0], ch: s[1], row: s[2], col: s[3]}
 }
 
