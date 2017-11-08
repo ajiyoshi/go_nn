@@ -45,16 +45,20 @@ func NewImages(s ImageShape, data []float64) *SimpleStrage {
 }
 
 func NewReshaped(s ImageShape, m mat64.Matrix) *SimpleStrage {
+	data := DumpMatrix(m)
+	return NewSimpleStrage(NewNDArray(NewNDShape(s.n, s.ch, s.row, s.col), data))
+}
+
+func DumpMatrix(m mat64.Matrix) []float64 {
 	row, col := m.Dims()
 	buf := make([]float64, col)
 
-	data := make([]float64, 0, s.n*s.ch*s.row*s.col)
+	data := make([]float64, 0, row*col)
 	for i := 0; i < row; i++ {
 		mat64.Row(buf, i, m)
 		data = append(data, buf...)
 	}
-
-	return NewSimpleStrage(NewNDArray(NewNDShape(s.n, s.ch, s.row, s.col), data))
+	return data
 }
 
 func NewSimpleStrage(a NDArray) *SimpleStrage {

@@ -7,21 +7,16 @@ import (
 )
 
 type Convolution struct {
-	dimIn     int
-	dimOut    int
-	Weight    ImageStrage
-	Bias      *mat64.Vector
-	DWeight   *mat64.Dense
-	DBias     *mat64.Vector
-	stride    int
-	pad       int
-	x         mat64.Matrix
+	dimIn   int
+	dimOut  int
+	Weight  ImageStrage
+	Bias    *mat64.Vector
+	DWeight *mat64.Dense
+	DBias   *mat64.Vector
+	stride  int
+	pad     int
+	//x         mat64.Matrix
 	optimizer optimizer.Optimizer
-}
-
-//Transform m.reshape(N, out_h, out_w, -1).transpose(0, 3, 1, 2) 相当の処理を行う
-func Transform(m mat64.Matrix, s *ImageShape) ImageStrage {
-	return NewReshaped(*s, m)
 }
 
 func (c *Convolution) Forward(x ImageStrage) ImageStrage {
@@ -47,7 +42,11 @@ func (c *Convolution) Forward(x ImageStrage) ImageStrage {
 		return c.Bias.At(j, 0) + val
 	}, &ret)
 
-	return Transform(&ret, &ImageShape{n: xs.n, ch: ws.n, col: outRow, row: outCol})
+	//m.reshape(N, out_h, out_w, -1).transpose(0, 3, 1, 2) 相当の処理を行う
+	data := DumpMatrix(&ret)
+	shape := NewNDShape(xs.n, outRow, outCol, ws.n)
+	array := NewNDArray(shape, data).Transpose(0, 3, 1, 2)
+	return NewSimpleStrage(array)
 }
 
 /*
