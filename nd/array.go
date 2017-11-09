@@ -3,6 +3,8 @@ package nd
 import (
 	"fmt"
 	"strings"
+
+	mat "github.com/gonum/matrix/mat64"
 )
 
 type Array interface {
@@ -14,6 +16,7 @@ type Array interface {
 	String() string
 	DeepEqual(Array) bool
 	Iterator() ArrayIterator
+	AsMatrix(row, col int) mat.Matrix
 }
 
 type Shape []int
@@ -91,6 +94,11 @@ func (x *ndArray) DeepEqual(y Array) bool {
 	}
 	return x.String() == y.String()
 }
+
+func (x *ndArray) AsMatrix(row, col int) mat.Matrix {
+	return NewMatrix(row, col, x)
+}
+
 func (x *ndArray) Iterator() ArrayIterator {
 	coef := Coefficient(x.Shape())
 	max := coef[0]
