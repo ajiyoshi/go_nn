@@ -165,7 +165,7 @@ func TestCol2im(t *testing.T) {
 				c.title, mat64.Formatted(c.col), mat64.Formatted(col))
 		}
 
-		actual := Col2im(c.col, &c.shape, c.fr, c.fc, c.stride, c.pad)
+		actual := Col2im(c.col, c.shape, c.fr, c.fc, c.stride, c.pad)
 
 		expect := NewImages(c.shape, c.expect)
 		if !actual.Equal(expect) {

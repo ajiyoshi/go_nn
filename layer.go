@@ -1,23 +1,23 @@
 package gocnn
 
 import (
-	"fmt"
-	"github.com/gonum/matrix/mat64"
+	mat "github.com/gonum/matrix/mat64"
 
+	"github.com/ajiyoshi/gocnn/matrix"
 	"github.com/ajiyoshi/gocnn/nd"
 	"github.com/ajiyoshi/gocnn/optimizer"
 )
 
 type Convolution struct {
-	dimIn   int
-	dimOut  int
-	Weight  ImageStrage
-	Bias    *mat64.Vector
-	DWeight *mat64.Dense
-	DBias   *mat64.Vector
-	stride  int
-	pad     int
-	//x         mat64.Matrix
+	Weight    ImageStrage
+	Bias      *mat.Vector
+	DWeight   ImageStrage
+	DBias     *mat.Vector
+	col       mat.Matrix
+	colW      mat.Matrix
+	stride    int
+	pad       int
+	x         ImageStrage
 	optimizer optimizer.Optimizer
 }
 
@@ -33,24 +33,24 @@ func (c *Convolution) Forward(x ImageStrage) ImageStrage {
 	outCol := int(1 + (xs.row+2*c.pad-ws.row)/c.stride)
 
 	// col : (xs.n*outRow*outCol, xs.ch*ws.row*ws.col)
-	col := Im2col(x, ws.row, ws.col, c.stride, c.pad)
+	c.col = Im2col(x, ws.row, ws.col, c.stride, c.pad)
 	// colW : (ws.ch*ws.row*ws.col, ws.n)
-	colW := c.Weight.Matrix().T()
+	c.colW = c.Weight.Matrix().T()
+	c.x = x
 
 	// ret : (xs.n*outRow*outCol, ws.n)
-	var ret mat64.Dense
-	ret.Mul(col, colW)
+	ret := mul(c.col, c.colW)
 	ret.Apply(func(i, j int, val float64) float64 {
 		return c.Bias.At(j, 0) + val
-	}, &ret)
+	}, ret)
 
 	//m.reshape(N, out_h, out_w, -1).transpose(0, 3, 1, 2) 相当の処理を行う
-	data := DumpMatrix(&ret)
+	data := DumpMatrix(ret)
 	shape := nd.NewShape(xs.n, outRow, outCol, ws.n)
 	return NewSimpleStrage(nd.NewArray(shape, data)).Transpose(0, 3, 1, 2)
 }
 
-func (c *Convolution) Backword(dout ImageStrage) ImageStrage {
+func (c *Convolution) Backword(doutImg ImageStrage) ImageStrage {
 	/*
 		FN, C, FH, FW = self.W.shape
 		dout = dout.transpose(0,2,3,1).reshape(-1, FN)
@@ -64,11 +64,23 @@ func (c *Convolution) Backword(dout ImageStrage) ImageStrage {
 
 		return dx
 	*/
-	m := dout.Transpose(0, 2, 3, 1)
-	fmt.Printf("%v\n", m.Shape())
-	fmt.Printf("%g\n", mat64.Formatted(m.ToMatrix(4, 2)))
+	s := c.Weight.Shape()
+	dout := doutImg.Transpose(0, 2, 3, 1).ToMatrix(doutImg.Size()/s.n, s.n)
 
-	return nil
+	c.DBias = matrix.SumCols(dout, c.DBias)
+	dWeight := mul(c.col.T(), dout)
+	c.DWeight = NewReshaped(s, dWeight.T())
+
+	dcol := mul(dout, c.colW.T())
+	dx := Col2im(dcol, c.x.Shape(), s.row, s.col, c.stride, c.pad)
+
+	return dx
+}
+
+func mul(x, y mat.Matrix) *mat.Dense {
+	var ret mat.Dense
+	ret.Mul(x, y)
+	return &ret
 }
 
 /*
