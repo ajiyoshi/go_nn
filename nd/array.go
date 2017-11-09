@@ -15,7 +15,6 @@ type Array interface {
 	Transpose(is ...int) Array
 	String() string
 	DeepEqual(Array) bool
-	Iterator() ArrayIterator
 	AsMatrix(row, col int) mat.Matrix
 }
 
@@ -97,46 +96,4 @@ func (x *ndArray) DeepEqual(y Array) bool {
 
 func (x *ndArray) AsMatrix(row, col int) mat.Matrix {
 	return NewMatrix(row, col, x)
-}
-
-func (x *ndArray) Iterator() ArrayIterator {
-	coef := Coefficient(x.Shape())
-	max := coef[0]
-	return &ndArrayIterator{
-		i:     0,
-		array: x,
-		coef:  coef,
-		max:   max,
-		buf:   make([]int, len(x.Shape())),
-	}
-}
-
-type ndArrayIterator struct {
-	i     int
-	array Array
-	max   int
-	coef  []int
-	buf   []int
-}
-type ArrayIterator interface {
-	OK() bool
-	Value() float64
-	Index() []int
-	Next()
-}
-
-func (itr *ndArrayIterator) OK() bool {
-	return itr.i < itr.max
-}
-func (itr *ndArrayIterator) Value() float64 {
-	return itr.array.Get(itr.Index()...)
-}
-func (itr *ndArrayIterator) Next() {
-	itr.i++
-	for i, c := range itr.coef {
-		itr.buf[i] = itr.i / c % itr.array.Shape()[i]
-	}
-}
-func (itr *ndArrayIterator) Index() []int {
-	return itr.buf
 }

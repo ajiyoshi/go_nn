@@ -1,7 +1,6 @@
 package nd
 
 import (
-	"reflect"
 	"testing"
 )
 
@@ -168,37 +167,5 @@ func TestArrayTranspose(t *testing.T) {
 		if !actual.DeepEqual(c.expect) {
 			t.Fatalf("expect %v\n%v got %v\n%v", c.expect.Shape(), c.expect, actual.Shape(), actual)
 		}
-	}
-}
-
-func TestArrayIterator(t *testing.T) {
-	array := NewArray(NewShape(1, 2, 3), make([]float64, 6))
-
-	cases := []struct {
-		expect []int
-	}{
-		{[]int{0, 0, 0}},
-		{[]int{0, 0, 1}},
-		{[]int{0, 0, 2}},
-		{[]int{0, 1, 0}},
-		{[]int{0, 1, 1}},
-		{[]int{0, 1, 2}},
-	}
-
-	itr := array.Iterator()
-	if !itr.OK() {
-		t.Fail()
-	}
-	for _, c := range cases {
-		if !itr.OK() {
-			t.Fatalf("not ok at %v", c.expect)
-		}
-		if !reflect.DeepEqual(itr.Index(), c.expect) {
-			t.Fatalf("expect %v got %v", c.expect, itr.Index())
-		}
-		itr.Next()
-	}
-	if itr.OK() {
-		t.Fail()
 	}
 }
