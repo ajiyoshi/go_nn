@@ -112,7 +112,8 @@ func (img *SimpleStrage) ChannelMatrix(n, ch int) *ChannelMatrix {
 }
 
 func (img *SimpleStrage) Matrix() mat64.Matrix {
-	return &ImageMatrix{img}
+	s := img.Shape()
+	return img.ToMatrix(s.n, s.ch*s.col*s.row)
 }
 func (img *SimpleStrage) ToMatrix(row, col int) mat64.Matrix {
 	ret := mat64.NewDense(row, col, make([]float64, col*row))
@@ -189,7 +190,6 @@ func Col2im(m mat64.Matrix, shape *ImageShape, filterR, filterC, stride, pad int
 }
 
 var (
-	_ mat64.Mutable = &ImageMatrix{}
 	_ mat64.Mutable = &ChannelMatrix{}
 )
 
@@ -209,35 +209,5 @@ func (m *ChannelMatrix) Dims() (int, int) {
 	return shape.row, shape.col
 }
 func (m *ChannelMatrix) T() mat64.Matrix {
-	return matrix.NewTransposeMutable(m)
-}
-
-type ImageMatrix struct {
-	img ImageStrage
-}
-
-func (m *ImageMatrix) Index(j int) (ch, row, col int) {
-	s := m.img.Shape()
-	ch, mod := j/(s.row*s.col), j%(s.row*s.col)
-	row, col = mod/s.col, mod%s.col
-	return ch, row, col
-}
-
-func (m *ImageMatrix) At(i, j int) float64 {
-	ch, row, col := m.Index(j)
-	return m.img.Get(i, ch, row, col)
-}
-
-func (m *ImageMatrix) Set(i, j int, x float64) {
-	ch, row, col := m.Index(j)
-	m.img.Set(i, ch, row, col, x)
-}
-
-func (m *ImageMatrix) Dims() (int, int) {
-	s := m.img.Shape()
-	return s.n, s.ch * s.row * s.col
-}
-
-func (m *ImageMatrix) T() mat64.Matrix {
 	return matrix.NewTransposeMutable(m)
 }
