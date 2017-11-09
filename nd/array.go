@@ -91,9 +91,19 @@ func (x *ndArray) DeepEqual(y Array) bool {
 	if !x.Shape().Equals(y.Shape()) {
 		return false
 	}
-	return x.String() == y.String()
+	n := x.Shape().Size()
+	this, that := x.AsMatrix(1, n), y.AsMatrix(1, n)
+	return mat.EqualApprox(this, that, 0.01)
 }
 
 func (x *ndArray) AsMatrix(row, col int) mat.Matrix {
 	return NewMatrix(row, col, x)
+}
+
+func (s Shape) Size() int {
+	ret := 1
+	for _, x := range s {
+		ret *= x
+	}
+	return ret
 }
