@@ -139,7 +139,7 @@ func TestPooling(t *testing.T) {
 		{
 			msg: "",
 			generate: func() (p *Pooling, x, forward, backward ImageStrage) {
-				p = &Pooling{row: 2, col: 2, stride: 1, pad: 0}
+				p = &Pooling{Row: 2, Col: 2, Stride: 1, Pad: 0}
 				x = NewSimpleStrage(nd.NewArray(nd.Shape{1, 1, 3, 3}, []float64{
 					1, 2, 3,
 					6, 5, 4,
@@ -160,7 +160,7 @@ func TestPooling(t *testing.T) {
 		{
 			msg: "",
 			generate: func() (p *Pooling, x, forward, backward ImageStrage) {
-				p = &Pooling{row: 3, col: 3, stride: 1, pad: 0}
+				p = &Pooling{Row: 3, Col: 3, Stride: 1, Pad: 0}
 				x = NewSimpleStrage(nd.NewArray(nd.Shape{1, 1, 3, 3}, []float64{
 					1, 2, 3,
 					6, 5, 4,

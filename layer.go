@@ -78,10 +78,10 @@ func (c *Convolution) Backword(doutImg ImageStrage) ImageStrage {
 }
 
 type Pooling struct {
-	row    int
-	col    int
-	stride int
-	pad    int
+	Row    int
+	Col    int
+	Stride int
+	Pad    int
 	argmax []int
 	x      ImageStrage
 }
@@ -102,8 +102,8 @@ func (p *Pooling) Forwad(x ImageStrage) ImageStrage {
 		self.x = x
 		self.arg_max = arg_max
 	*/
-	tmp := Im2col(x, p.row, p.col, p.stride, p.pad)
-	col := ReshapeMatrix(-1, p.row*p.col, tmp)
+	tmp := Im2col(x, p.Row, p.Col, p.Stride, p.Pad)
+	col := ReshapeMatrix(-1, p.Row*p.Col, tmp)
 
 	p.argmax = argmaxEachRow(col)
 	p.x = x
@@ -111,8 +111,8 @@ func (p *Pooling) Forwad(x ImageStrage) ImageStrage {
 	out := maxEachRow(col)
 
 	s := x.Shape()
-	outRow := 1 + (s.row-p.row)/p.stride
-	outCol := 1 + (s.col-p.col)/p.stride
+	outRow := 1 + (s.row-p.Row)/p.Stride
+	outCol := 1 + (s.col-p.Col)/p.Stride
 	return NewReshaped([]int{s.n, outRow, outCol, s.ch}, out).Transpose(0, 3, 1, 2)
 }
 
@@ -131,7 +131,7 @@ func (p *Pooling) Backword(doutImage ImageStrage) ImageStrage {
 		return dx
 	*/
 	dout := doutImage.Transpose(0, 2, 3, 1)
-	poolSize := p.row * p.col
+	poolSize := p.Row * p.Col
 	dmax := mat.NewDense(dout.Size(), poolSize, nil)
 	flat := mat.Row(nil, 0, dout.ToMatrix(1, dout.Size()))
 	for i, x := range flat {
@@ -139,7 +139,7 @@ func (p *Pooling) Backword(doutImage ImageStrage) ImageStrage {
 		dmax.Set(i, j, x)
 	}
 
-	return Col2im(dmax, p.x.Shape(), p.row, p.col, p.stride, p.pad)
+	return Col2im(dmax, p.x.Shape(), p.Row, p.Col, p.Stride, p.Pad)
 }
 
 func mul(x, y mat.Matrix) *mat.Dense {
