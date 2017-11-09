@@ -130,3 +130,65 @@ func TestBackword(t *testing.T) {
 		t.Fatalf("expect \n%v got \n%v", expect, actual)
 	}
 }
+
+func TestPooling(t *testing.T) {
+	cases := []struct {
+		msg      string
+		generate func() (p *Pooling, x, forward, backward ImageStrage)
+	}{
+		{
+			msg: "",
+			generate: func() (p *Pooling, x, forward, backward ImageStrage) {
+				p = &Pooling{row: 2, col: 2, stride: 1, pad: 0}
+				x = NewSimpleStrage(nd.NewArray(nd.Shape{1, 1, 3, 3}, []float64{
+					1, 2, 3,
+					6, 5, 4,
+					8, 9, 7,
+				}))
+				forward = NewSimpleStrage(nd.NewArray(nd.Shape{1, 1, 2, 2}, []float64{
+					6, 5,
+					9, 9,
+				}))
+				backward = NewSimpleStrage(nd.NewArray(nd.Shape{1, 1, 3, 3}, []float64{
+					0, 0, 0,
+					6, 5, 0,
+					0, 18, 0,
+				}))
+				return p, x, forward, backward
+			},
+		},
+		{
+			msg: "",
+			generate: func() (p *Pooling, x, forward, backward ImageStrage) {
+				p = &Pooling{row: 3, col: 3, stride: 1, pad: 0}
+				x = NewSimpleStrage(nd.NewArray(nd.Shape{1, 1, 3, 3}, []float64{
+					1, 2, 3,
+					6, 5, 4,
+					8, 9, 7,
+				}))
+				forward = NewSimpleStrage(nd.NewArray(nd.Shape{1, 1, 1, 1}, []float64{
+					9,
+				}))
+				backward = NewSimpleStrage(nd.NewArray(nd.Shape{1, 1, 3, 3}, []float64{
+					0, 0, 0,
+					0, 0, 0,
+					0, 9, 0,
+				}))
+				return p, x, forward, backward
+			},
+		},
+	}
+
+	for _, c := range cases {
+		pool, x, forward, backward := c.generate()
+		y := pool.Forwad(x)
+		if !y.Equal(forward) {
+			t.Fatalf("expect \n%v got \n%v", forward, y)
+		}
+
+		z := pool.Backword(y)
+		if !z.Equal(backward) {
+			t.Fatalf("expect \n%v got \n%v", backward, z)
+		}
+	}
+}

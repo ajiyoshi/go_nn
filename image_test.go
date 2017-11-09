@@ -3,7 +3,7 @@ package gocnn
 import (
 	"testing"
 
-	"github.com/gonum/matrix/mat64"
+	mat "github.com/gonum/matrix/mat64"
 )
 
 func TestCol2im(t *testing.T) {
@@ -14,7 +14,7 @@ func TestCol2im(t *testing.T) {
 		title  string
 		shape  ImageShape
 		image  []float64
-		col    mat64.Matrix
+		col    mat.Matrix
 		expect []float64
 		pad    int
 		stride int
@@ -33,7 +33,7 @@ func TestCol2im(t *testing.T) {
 				6, 5, 4,
 				3, 2, 1,
 			},
-			col: mat64.NewDense(2, 9, []float64{
+			col: mat.NewDense(2, 9, []float64{
 				1, 2, 3, 4, 5, 6, 7, 8, 9,
 				9, 8, 7, 6, 5, 4, 3, 2, 1,
 			}),
@@ -62,7 +62,7 @@ func TestCol2im(t *testing.T) {
 				40, 50, 60,
 				70, 80, 90,
 			},
-			col: mat64.NewDense(4, 8, []float64{
+			col: mat.NewDense(4, 8, []float64{
 				1, 2, 4, 5, 10, 20, 40, 50,
 				2, 3, 5, 6, 20, 30, 50, 60,
 				4, 5, 7, 8, 40, 50, 70, 80,
@@ -91,7 +91,7 @@ func TestCol2im(t *testing.T) {
 				5, 6,
 				7, 8,
 			},
-			col: mat64.NewDense(9, 8, []float64{
+			col: mat.NewDense(9, 8, []float64{
 				0, 0, 0, 1, 0, 0, 0, 5,
 				0, 0, 1, 2, 0, 0, 5, 6,
 				0, 0, 2, 0, 0, 0, 6, 0,
@@ -124,7 +124,7 @@ func TestCol2im(t *testing.T) {
 				5, 6,
 				7, 8,
 			},
-			col: mat64.NewDense(18, 4, []float64{
+			col: mat.NewDense(18, 4, []float64{
 				0, 0, 0, 1,
 				0, 0, 1, 2,
 				0, 0, 2, 0,
@@ -160,9 +160,9 @@ func TestCol2im(t *testing.T) {
 	for _, c := range cases {
 		image := NewImages(c.shape, c.image)
 		col := Im2col(image, c.fr, c.fc, c.stride, c.pad)
-		if !mat64.EqualApprox(col, c.col, 0.01) {
+		if !mat.EqualApprox(col, c.col, 0.01) {
 			t.Fatalf("%s expect \n%.2g but got \n%.2g\n",
-				c.title, mat64.Formatted(c.col), mat64.Formatted(col))
+				c.title, mat.Formatted(c.col), mat.Formatted(col))
 		}
 
 		actual := Col2im(c.col, c.shape, c.fr, c.fc, c.stride, c.pad)
@@ -183,7 +183,7 @@ func TestImageMatrix(t *testing.T) {
 		title  string
 		shape  ImageShape
 		image  []float64
-		expect mat64.Matrix
+		expect mat.Matrix
 	}{
 		{
 			title: "image matrix",
@@ -197,7 +197,7 @@ func TestImageMatrix(t *testing.T) {
 				6, 5, 4,
 				3, 2, 1,
 			},
-			expect: mat64.NewDense(2, 9, []float64{
+			expect: mat.NewDense(2, 9, []float64{
 				1, 2, 3, 4, 5, 6, 7, 8, 9,
 				9, 8, 7, 6, 5, 4, 3, 2, 1,
 			}),
@@ -212,7 +212,7 @@ func TestImageMatrix(t *testing.T) {
 				5, 6,
 				7, 8,
 			},
-			expect: mat64.NewDense(1, 8, []float64{
+			expect: mat.NewDense(1, 8, []float64{
 				1, 2, 3, 4, 5, 6, 7, 8,
 			}),
 		},
@@ -221,9 +221,9 @@ func TestImageMatrix(t *testing.T) {
 	for _, c := range cases {
 		image := NewImages(c.shape, c.image)
 		actual := image.Matrix()
-		if !mat64.EqualApprox(actual, c.expect, 0.01) {
+		if !mat.EqualApprox(actual, c.expect, 0.01) {
 			t.Fatalf("%s expect \n%.2g but got \n%.2g\n",
-				c.title, mat64.Formatted(c.expect), mat64.Formatted(actual))
+				c.title, mat.Formatted(c.expect), mat.Formatted(actual))
 		}
 
 	}
@@ -267,18 +267,18 @@ func TestImageString(t *testing.T) {
 }
 
 func TestReshape(t *testing.T) {
-	shape := func(n, ch, r, c int) ImageShape {
-		return ImageShape{n: n, ch: ch, row: r, col: c}
+	shape := func(n, ch, r, c int) []int {
+		return []int{n, ch, r, c}
 	}
 	cases := []struct {
 		title  string
-		shape  ImageShape
-		image  mat64.Matrix
+		shape  []int
+		image  mat.Matrix
 		expect string
 	}{
 		{
 			title: "image matrix",
-			image: mat64.NewDense(4, 3, []float64{
+			image: mat.NewDense(4, 3, []float64{
 				1, 2, 3,
 				4, 5, 6,
 				7, 8, 9,
@@ -295,7 +295,7 @@ func TestReshape(t *testing.T) {
 		},
 		{
 			title: "image matrix",
-			image: mat64.NewDense(4, 3, []float64{
+			image: mat.NewDense(4, 3, []float64{
 				1, 2, 3,
 				4, 5, 6,
 				7, 8, 9,
@@ -315,7 +315,7 @@ func TestReshape(t *testing.T) {
 
 		{
 			title: "image matrix",
-			image: mat64.NewDense(9, 2, []float64{
+			image: mat.NewDense(9, 2, []float64{
 				0.1, 0.2,
 				0.3, 0.4,
 				0.5, 0.6,
@@ -342,7 +342,7 @@ func TestReshape(t *testing.T) {
 		},
 		{
 			title: "image matrix",
-			image: mat64.NewDense(9, 2, []float64{
+			image: mat.NewDense(9, 2, []float64{
 				0.1, 0.2,
 				0.3, 0.4,
 				0.5, 0.6,
@@ -378,6 +378,62 @@ func TestReshape(t *testing.T) {
 		if actual != c.expect {
 			t.Fatalf("%s expect \n%s but got \n%s\n",
 				c.title, c.expect, actual)
+		}
+	}
+}
+func TestReshapeMatrix(t *testing.T) {
+	cases := []struct {
+		msg      string
+		input    mat.Mutable
+		row, col int
+		expect   mat.Matrix
+	}{
+		{
+			msg: "(2, 3) -> (3, 2)",
+			input: mat.NewDense(2, 3, []float64{
+				1, 2, 3,
+				4, 5, 6,
+			}),
+			row: 3, col: 2,
+			expect: mat.NewDense(3, 2, []float64{
+				1, 2,
+				3, 4,
+				5, 6,
+			}),
+		},
+		{
+			msg: "負の列数を指定されたらよしなに合わせる",
+			input: mat.NewDense(2, 3, []float64{
+				1, 2, 3,
+				4, 5, 6,
+			}),
+			row: 3, col: -1,
+			expect: mat.NewDense(3, 2, []float64{
+				1, 2,
+				3, 4,
+				5, 6,
+			}),
+		},
+		{
+			msg: "負の行数を指定されたらよしなに合わせる",
+			input: mat.NewDense(2, 3, []float64{
+				1, 2, 3,
+				4, 5, 6,
+			}),
+			row: -1, col: 2,
+			expect: mat.NewDense(3, 2, []float64{
+				1, 2,
+				3, 4,
+				5, 6,
+			}),
+		},
+	}
+
+	for _, c := range cases {
+		actual := ReshapeMatrix(c.row, c.col, c.input)
+		if !mat.EqualApprox(actual, c.expect, 0.01) {
+			t.Fatalf("%s expect \n%g but got \n%g\n",
+				c.msg, mat.Formatted(c.expect), mat.Formatted(actual))
 		}
 	}
 }

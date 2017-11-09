@@ -48,9 +48,9 @@ func NewImages(s ImageShape, data []float64) *SimpleStrage {
 	return NewSimpleStrage(array)
 }
 
-func NewReshaped(s ImageShape, m mat.Matrix) *SimpleStrage {
+func NewReshaped(s []int, m mat.Matrix) *SimpleStrage {
 	data := DumpMatrix(m)
-	return NewSimpleStrage(nd.NewArray(nd.NewShape(s.n, s.ch, s.row, s.col), data))
+	return NewSimpleStrage(nd.NewArray(s, data))
 }
 
 func DumpMatrix(m mat.Matrix) []float64 {
@@ -129,7 +129,7 @@ func (img *SimpleStrage) Transpose(is ...int) ImageStrage {
 }
 
 // (shape.n * outRow * outCol, shape.ch * filterRow * filterCol)
-func Im2col(is ImageStrage, filterR, filterC, stride, pad int) mat.Matrix {
+func Im2col(is ImageStrage, filterR, filterC, stride, pad int) *mat.Dense {
 	shape := is.Shape()
 	outR := (shape.row+2*pad-filterR)/stride + 1
 	outC := (shape.col+2*pad-filterC)/stride + 1
@@ -188,6 +188,7 @@ func Col2im(m mat.Matrix, shape ImageShape, filterR, filterC, stride, pad int) I
 
 var (
 	_ mat.Mutable = &ChannelMatrix{}
+	_ mat.Matrix  = &reshapedMatrix{}
 )
 
 type ChannelMatrix struct {
@@ -206,5 +207,48 @@ func (m *ChannelMatrix) Dims() (int, int) {
 	return shape.row, shape.col
 }
 func (m *ChannelMatrix) T() mat.Matrix {
+	return matrix.NewTransposeMutable(m)
+}
+
+type reshapedMatrix struct {
+	row, col int
+	origin   mat.Mutable
+}
+
+func ReshapeMatrix(row, col int, m mat.Mutable) *reshapedMatrix {
+	r, c := m.Dims()
+	if row < 0 {
+		row = r * c / col
+	}
+	if col < 0 {
+		col = r * c / row
+	}
+
+	if row*col != r*c {
+		panic("matrix size should be equal")
+	}
+	return &reshapedMatrix{
+		row:    row,
+		col:    col,
+		origin: m,
+	}
+}
+func (m *reshapedMatrix) index(i, j int) (r, c int) {
+	_, col := m.origin.Dims()
+	n := i*m.col + j
+	return n / col, n % col
+}
+func (m *reshapedMatrix) At(i, j int) float64 {
+	row, col := m.index(i, j)
+	return m.origin.At(row, col)
+}
+func (m *reshapedMatrix) Set(i, j int, v float64) {
+	row, col := m.index(i, j)
+	m.origin.Set(row, col, v)
+}
+func (m *reshapedMatrix) Dims() (int, int) {
+	return m.row, m.col
+}
+func (m *reshapedMatrix) T() mat.Matrix {
 	return matrix.NewTransposeMutable(m)
 }

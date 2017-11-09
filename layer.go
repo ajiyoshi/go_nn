@@ -69,12 +69,77 @@ func (c *Convolution) Backword(doutImg ImageStrage) ImageStrage {
 
 	c.DBias = matrix.SumCols(dout, c.DBias)
 	dWeight := mul(c.col.T(), dout)
-	c.DWeight = NewReshaped(s, dWeight.T())
+	c.DWeight = NewReshaped([]int{s.n, s.ch, s.row, s.col}, dWeight.T())
 
 	dcol := mul(dout, c.colW.T())
 	dx := Col2im(dcol, c.x.Shape(), s.row, s.col, c.stride, c.pad)
 
 	return dx
+}
+
+type Pooling struct {
+	row    int
+	col    int
+	stride int
+	pad    int
+	argmax []int
+	x      ImageStrage
+}
+
+func (p *Pooling) Forwad(x ImageStrage) ImageStrage {
+	/*
+		N, C, H, W = x.shape
+		out_h = int(1 + (H - self.pool_h) / self.stride)
+		out_w = int(1 + (W - self.pool_w) / self.stride)
+
+		col = im2col(x, self.pool_h, self.pool_w, self.stride, self.pad)
+		col = col.reshape(-1, self.pool_h*self.pool_w)
+
+		arg_max = np.argmax(col, axis=1)
+		out = np.max(col, axis=1)
+		out = out.reshape(N, out_h, out_w, C).transpose(0, 3, 1, 2)
+
+		self.x = x
+		self.arg_max = arg_max
+	*/
+	tmp := Im2col(x, p.row, p.col, p.stride, p.pad)
+	col := ReshapeMatrix(-1, p.row*p.col, tmp)
+
+	p.argmax = argmaxEachRow(col)
+	p.x = x
+
+	out := maxEachRow(col)
+
+	s := x.Shape()
+	outRow := 1 + (s.row-p.row)/p.stride
+	outCol := 1 + (s.col-p.col)/p.stride
+	return NewReshaped([]int{s.n, outRow, outCol, s.ch}, out).Transpose(0, 3, 1, 2)
+}
+
+func (p *Pooling) Backword(doutImage ImageStrage) ImageStrage {
+	/*
+		dout = dout.transpose(0, 2, 3, 1)
+
+		pool_size = self.pool_h * self.pool_w
+		dmax = np.zeros((dout.size, pool_size))
+		dmax[np.arange(self.arg_max.size), self.arg_max.flatten()] = dout.flatten()
+		dmax = dmax.reshape(dout.shape + (pool_size,))
+
+		dcol = dmax.reshape(dmax.shape[0] * dmax.shape[1] * dmax.shape[2], -1)
+		dx = col2im(dcol, self.x.shape, self.pool_h, self.pool_w, self.stride, self.pad)
+
+		return dx
+	*/
+	dout := doutImage.Transpose(0, 2, 3, 1)
+	poolSize := p.row * p.col
+	dmax := mat.NewDense(dout.Size(), poolSize, nil)
+	flat := mat.Row(nil, 0, dout.ToMatrix(1, dout.Size()))
+	for i, x := range flat {
+		j := p.argmax[i]
+		dmax.Set(i, j, x)
+	}
+
+	return Col2im(dmax, p.x.Shape(), p.row, p.col, p.stride, p.pad)
 }
 
 func mul(x, y mat.Matrix) *mat.Dense {
@@ -83,156 +148,23 @@ func mul(x, y mat.Matrix) *mat.Dense {
 	return &ret
 }
 
-/*
-
-(1, 1, 2, 2)
-x:
-[[[[1 2]
-   [3 4]]]]
-col:
-[[ 0.  0.  0.  0.  1.  2.  0.  3.  4.]
- [ 0.  0.  0.  1.  2.  0.  3.  4.  0.]
- [ 0.  1.  2.  0.  3.  4.  0.  0.  0.]
- [ 1.  2.  0.  3.  4.  0.  0.  0.  0.]]
-col_W:
-[[ 2.15202999  0.45267518  2.01305218]
- [ 0.22657089  1.28330269 -0.40627903]
- [-1.77601203  1.0217372   1.09370993]
- [ 1.34289068 -0.42723125  1.19450561]
- [ 0.32261099  0.34326762  0.28240066]
- [ 0.25121542  0.6273834  -0.59693708]
- [ 0.10318934 -0.94552228  0.19347878]
- [-1.43851153  0.16529315  0.88000147]
- [-1.42900608 -1.21435333 -1.76143363]]
-out:
-[[-9.2065171  -2.76349943 -5.31720361]
- [-3.45636547 -1.91609026  5.85974913]
- [-1.35275854  6.86611357  0.24059449]
- [ 7.92428776  3.11065729  5.91361359]]
-out:
-[[[[-9.2065171  -3.45636547]
-   [-1.35275854  7.92428776]]
-
-  [[-2.76349943 -1.91609026]
-   [ 6.86611357  3.11065729]]
-
-  [[-5.31720361  5.85974913]
-   [ 0.24059449  5.91361359]]]]
-(1, 3, 2, 2)
-
-
-
-(2, 1, 2, 2)
-x:
-[[[[1 2]
-   [3 4]]]
-
-
- [[[5 6]
-   [7 8]]]]
-col:
-[[ 0.  0.  0.  0.  1.  2.  0.  3.  4.]
- [ 0.  0.  0.  1.  2.  0.  3.  4.  0.]
- [ 0.  1.  2.  0.  3.  4.  0.  0.  0.]
- [ 1.  2.  0.  3.  4.  0.  0.  0.  0.]
- [ 0.  0.  0.  0.  5.  6.  0.  7.  8.]
- [ 0.  0.  0.  5.  6.  0.  7.  8.  0.]
- [ 0.  5.  6.  0.  7.  8.  0.  0.  0.]
- [ 5.  6.  0.  7.  8.  0.  0.  0.  0.]]
-W:
-[[[[-0.46975517  0.43840063 -0.1623982 ]
-   [ 1.49849268  1.90355445  0.18663614]
-   [-1.15614844  1.97173161  0.76455132]]]
-
-
- [[[-0.97270268 -1.16251917  1.16657177]
-   [-0.42657524  0.86106902 -0.20374434]
-   [ 1.38454555 -0.01013243 -0.00231317]]]
-
-
- [[[-0.39862536 -1.00920575 -0.61343584]
-   [ 0.58962601 -1.29130808  0.81612642]
-   [ 0.59055744  0.721409    1.24700435]]]]
-col_W:
-[[-0.46975517 -0.97270268 -0.39862536]
- [ 0.43840063 -1.16251917 -1.00920575]
- [-0.1623982   1.16657177 -0.61343584]
- [ 1.49849268 -0.42657524  0.58962601]
- [ 1.90355445  0.86106902 -1.29130808]
- [ 0.18663614 -0.20374434  0.81612642]
- [-1.15614844  1.38454555  0.59055744]
- [ 1.97173161 -0.01013243  0.721409  ]
- [ 0.76455132 -0.00231317  1.24700435]]
-out:
-[[ 11.25022681   0.41393035   7.49318916]
- [  9.7240827    5.40866973   2.66431816]
- [  6.57081212   2.93885408  -2.84549598]
- [ 12.51674191  -1.13319066  -5.81339112]
- [ 30.55612084   2.99344665  13.46611592]
- [ 26.59460388  12.64429732   5.10545564]
- [ 16.03558419   5.58436321 -11.23678895]
- [ 25.99951224  -7.93610294 -14.2514438 ]]
-out:
-[[[[ 11.25022681   9.7240827 ]
-   [  6.57081212  12.51674191]]
-
-  [[  0.41393035   5.40866973]
-   [  2.93885408  -1.13319066]]
-
-  [[  7.49318916   2.66431816]
-   [ -2.84549598  -5.81339112]]]
-
-
- [[[ 30.55612084  26.59460388]
-   [ 16.03558419  25.99951224]]
-
-  [[  2.99344665  12.64429732]
-   [  5.58436321  -7.93610294]]
-
-  [[ 13.46611592   5.10545564]
-   [-11.23678895 -14.2514438 ]]]]
-(2, 3, 2, 2)
-
-
-out:
-[[ -2.7861129    5.87975328  -6.22961953]
- [ -9.86702067   7.56464798   6.51476392]
- [ -4.69394127   2.24960524   6.72173338]
- [  5.0126872    2.0581042    3.34418118]
- [ -9.99554579  14.74329158  -9.82777943]
- [-18.51828783  15.8291741   14.74556943]
- [ -4.41795702   6.91398402  21.91439931]
- [  9.91470119   3.49005786   4.06330827]]
-out.reshape:
-[[[[ -2.7861129    5.87975328  -6.22961953]
-   [ -9.86702067   7.56464798   6.51476392]]
-
-  [[ -4.69394127   2.24960524   6.72173338]
-   [  5.0126872    2.0581042    3.34418118]]]
-
-
- [[[ -9.99554579  14.74329158  -9.82777943]
-   [-18.51828783  15.8291741   14.74556943]]
-
-  [[ -4.41795702   6.91398402  21.91439931]
-   [  9.91470119   3.49005786   4.06330827]]]]
-out:
-[[[[ -2.7861129   -9.86702067]
-   [ -4.69394127   5.0126872 ]]
-
-  [[  5.87975328   7.56464798]
-   [  2.24960524   2.0581042 ]]
-
-  [[ -6.22961953   6.51476392]
-   [  6.72173338   3.34418118]]]
-
-
- [[[ -9.99554579 -18.51828783]
-   [ -4.41795702   9.91470119]]
-
-  [[ 14.74329158  15.8291741 ]
-   [  6.91398402   3.49005786]]
-
-  [[ -9.82777943  14.74556943]
-   [ 21.91439931   4.06330827]]]]
-*/
+func argmaxEachRow(m mat.Matrix) []int {
+	row, col := m.Dims()
+	buf := make([]float64, col)
+	ret := make([]int, row)
+	for i := 0; i < row; i++ {
+		mat.Row(buf, i, m)
+		ret[i] = matrix.Argmax(buf)
+	}
+	return ret
+}
+func maxEachRow(m mat.Matrix) mat.Matrix {
+	row, col := m.Dims()
+	buf := make([]float64, col)
+	ret := make([]float64, row)
+	for i := 0; i < row; i++ {
+		mat.Row(buf, i, m)
+		ret[i] = mat.Max(mat.NewVector(col, buf))
+	}
+	return mat.NewDense(row, 1, ret)
+}
