@@ -1,4 +1,4 @@
-package gocnn
+package ndarray
 
 import (
 	"reflect"
