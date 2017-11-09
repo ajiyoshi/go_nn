@@ -36,8 +36,8 @@ func TestForward(t *testing.T) {
 				conv := &Convolution{
 					Weight: w,
 					Bias:   bias,
-					stride: 1,
-					pad:    1,
+					Stride: 1,
+					Pad:    1,
 				}
 				expect := NewImages(ImageShape{dataNum, filterNum, 2, 2}, []float64{
 					-0.00793818, 0.00280642,
@@ -70,8 +70,8 @@ func TestForward(t *testing.T) {
 				conv := &Convolution{
 					Weight: w,
 					Bias:   bias,
-					stride: 1,
-					pad:    1,
+					Stride: 1,
+					Pad:    1,
 				}
 				expect := NewImages(ImageShape{dataNum, filterNum, 2, 2}, []float64{
 					-0.03502013, 0.01965824,
@@ -116,8 +116,8 @@ func TestBackword(t *testing.T) {
 	conv := &Convolution{
 		Weight: w,
 		Bias:   bias,
-		stride: 1,
-		pad:    1,
+		Stride: 1,
+		Pad:    1,
 	}
 	y := conv.Forward(x)
 	actual := conv.Backword(y)

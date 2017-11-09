@@ -9,14 +9,15 @@ import (
 )
 
 type Convolution struct {
-	Weight    ImageStrage
-	Bias      *mat.Vector
-	DWeight   ImageStrage
-	DBias     *mat.Vector
+	Weight ImageStrage
+	Bias   *mat.Vector
+	Stride int
+	Pad    int
+
+	dWeight   ImageStrage
+	dBias     *mat.Vector
 	col       mat.Matrix
 	colW      mat.Matrix
-	stride    int
-	pad       int
 	x         ImageStrage
 	optimizer optimizer.Optimizer
 }
@@ -29,11 +30,11 @@ func (c *Convolution) Forward(x ImageStrage) ImageStrage {
 		panic("number of channels was not match")
 	}
 
-	outRow := int(1 + (xs.row+2*c.pad-ws.row)/c.stride)
-	outCol := int(1 + (xs.row+2*c.pad-ws.row)/c.stride)
+	outRow := int(1 + (xs.row+2*c.Pad-ws.row)/c.Stride)
+	outCol := int(1 + (xs.row+2*c.Pad-ws.row)/c.Stride)
 
 	// col : (xs.n*outRow*outCol, xs.ch*ws.row*ws.col)
-	c.col = Im2col(x, ws.row, ws.col, c.stride, c.pad)
+	c.col = Im2col(x, ws.row, ws.col, c.Stride, c.Pad)
 	// colW : (ws.ch*ws.row*ws.col, ws.n)
 	c.colW = c.Weight.Matrix().T()
 	c.x = x
@@ -67,12 +68,12 @@ func (c *Convolution) Backword(doutImg ImageStrage) ImageStrage {
 	s := c.Weight.Shape()
 	dout := doutImg.Transpose(0, 2, 3, 1).ToMatrix(doutImg.Size()/s.n, s.n)
 
-	c.DBias = matrix.SumCols(dout, c.DBias)
+	c.dBias = matrix.SumCols(dout, c.dBias)
 	dWeight := mul(c.col.T(), dout)
-	c.DWeight = NewReshaped([]int{s.n, s.ch, s.row, s.col}, dWeight.T())
+	c.dWeight = NewReshaped([]int{s.n, s.ch, s.row, s.col}, dWeight.T())
 
 	dcol := mul(dout, c.colW.T())
-	dx := Col2im(dcol, c.x.Shape(), s.row, s.col, c.stride, c.pad)
+	dx := Col2im(dcol, c.x.Shape(), s.row, s.col, c.Stride, c.Pad)
 
 	return dx
 }
