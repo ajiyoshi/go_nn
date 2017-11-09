@@ -83,6 +83,7 @@ type Pooling struct {
 	Col    int
 	Stride int
 	Pad    int
+
 	argmax []int
 	x      ImageStrage
 }
