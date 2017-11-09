@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/gonum/matrix/mat64"
 
-	nd "github.com/ajiyoshi/gocnn/ndarray"
+	"github.com/ajiyoshi/gocnn/nd"
 	"github.com/ajiyoshi/gocnn/optimizer"
 )
 
@@ -46,8 +46,8 @@ func (c *Convolution) Forward(x ImageStrage) ImageStrage {
 
 	//m.reshape(N, out_h, out_w, -1).transpose(0, 3, 1, 2) 相当の処理を行う
 	data := DumpMatrix(&ret)
-	shape := nd.NewNDShape(xs.n, outRow, outCol, ws.n)
-	return NewSimpleStrage(nd.NewNDArray(shape, data)).Transpose(0, 3, 1, 2)
+	shape := nd.NewShape(xs.n, outRow, outCol, ws.n)
+	return NewSimpleStrage(nd.NewArray(shape, data)).Transpose(0, 3, 1, 2)
 }
 
 func (c *Convolution) Backword(dout ImageStrage) ImageStrage {

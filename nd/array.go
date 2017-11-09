@@ -1,4 +1,4 @@
-package ndarray
+package nd
 
 import (
 	"fmt"
@@ -6,25 +6,25 @@ import (
 	"strings"
 )
 
-type NDArray interface {
+type Array interface {
 	Get(is ...int) float64
 	Set(x float64, is ...int)
-	Shape() NDShape
-	Segment(i int) NDArray
-	Transpose(is ...int) NDArray
+	Shape() Shape
+	Segment(i int) Array
+	Transpose(is ...int) Array
 	String() string
-	DeepEqual(NDArray) bool
-	Iterator() NDArrayIterator
+	DeepEqual(Array) bool
+	Iterator() ArrayIterator
 }
 
-type NDShape []int
+type Shape []int
 
 type Indexer interface {
 	At(is ...int) int
 }
 
 var (
-	_ NDArray = (*ndArray)(nil)
+	_ Array = (*ndArray)(nil)
 
 	_ Indexer = (*NormalIndexer)(nil)
 	_ Indexer = (*TransposeIndexer)(nil)
@@ -33,11 +33,11 @@ var (
 
 type ndArray struct {
 	data  []float64
-	shape NDShape
+	shape Shape
 	index Indexer
 }
 
-func NewNDArray(s NDShape, data []float64) *ndArray {
+func NewArray(s Shape, data []float64) *ndArray {
 	return &ndArray{
 		shape: s,
 		data:  data,
@@ -52,17 +52,17 @@ func (x *ndArray) Set(v float64, is ...int) {
 	i := x.index.At(is...)
 	x.data[i] = v
 }
-func (x *ndArray) Shape() NDShape {
+func (x *ndArray) Shape() Shape {
 	return x.shape
 }
-func (x *ndArray) Segment(i int) NDArray {
+func (x *ndArray) Segment(i int) Array {
 	return &ndArray{
 		shape: NewSubShape(x.shape),
 		data:  x.data,
 		index: &SubIndexer{fixed: i, origin: x.index},
 	}
 }
-func (x *ndArray) Transpose(is ...int) NDArray {
+func (x *ndArray) Transpose(is ...int) Array {
 	return &ndArray{
 		shape: NewTrShape(x.shape, is),
 		data:  x.data,
@@ -86,13 +86,13 @@ func (x *ndArray) String() string {
 	}
 	return fmt.Sprintf("[%s]", strings.Join(tmp, ",\n"))
 }
-func (x *ndArray) DeepEqual(y NDArray) bool {
+func (x *ndArray) DeepEqual(y Array) bool {
 	if !x.Shape().Equals(y.Shape()) {
 		return false
 	}
 	return x.String() == y.String()
 }
-func (x *ndArray) Iterator() NDArrayIterator {
+func (x *ndArray) Iterator() ArrayIterator {
 	coef := Coefficient(x.Shape())
 	max := coef[0]
 	return &ndArrayIterator{
@@ -104,16 +104,16 @@ func (x *ndArray) Iterator() NDArrayIterator {
 	}
 }
 
-func NewNDShape(dim ...int) NDShape {
+func NewShape(dim ...int) Shape {
 	return dim
 }
-func NewSubShape(origin NDShape) NDShape {
+func NewSubShape(origin Shape) Shape {
 	return origin[1:]
 }
-func NewTrShape(origin NDShape, table []int) NDShape {
+func NewTrShape(origin Shape, table []int) Shape {
 	return shapeConvert(origin, table)
 }
-func shapeConvert(origin NDShape, table []int) NDShape {
+func shapeConvert(origin Shape, table []int) Shape {
 	/*
 		shape(2, 3) (1, 0) -> shape(3, 2)
 		shape(2, 3, 4) (1, 2, 0) -> shape(3, 4, 2)
@@ -125,12 +125,12 @@ func shapeConvert(origin NDShape, table []int) NDShape {
 	return ret
 }
 
-func (x NDShape) Equals(y NDShape) bool {
+func (x Shape) Equals(y Shape) bool {
 	return reflect.DeepEqual(x, y)
 }
 
 type NormalIndexer struct {
-	shape NDShape
+	shape Shape
 }
 type TransposeIndexer struct {
 	table  []int
@@ -196,12 +196,12 @@ func Coefficient(dims []int) []int {
 
 type ndArrayIterator struct {
 	i     int
-	array NDArray
+	array Array
 	max   int
 	coef  []int
 	buf   []int
 }
-type NDArrayIterator interface {
+type ArrayIterator interface {
 	OK() bool
 	Value() float64
 	Index() []int

@@ -1,12 +1,12 @@
-package ndarray
+package nd
 
 import (
 	"reflect"
 	"testing"
 )
 
-func TestNDArrayGet(t *testing.T) {
-	a := NewNDArray(NewNDShape(2, 3),
+func TestArrayGet(t *testing.T) {
+	a := NewArray(NewShape(2, 3),
 		[]float64{
 			1, 2, 3,
 			4, 5, 6,
@@ -56,22 +56,22 @@ func TestNDArrayGet(t *testing.T) {
 	}
 
 }
-func TestNDArrayString(t *testing.T) {
+func TestArrayString(t *testing.T) {
 	cases := []struct {
 		msg    string
-		input  NDArray
+		input  Array
 		expect string
 	}{
 		{
 			msg: "(1, 2)",
-			input: NewNDArray(NewNDShape(2), []float64{
+			input: NewArray(NewShape(2), []float64{
 				1, 2,
 			}),
 			expect: "[1.00, 2.00]",
 		},
 		{
 			msg: "(2, 3).Segment(0)",
-			input: NewNDArray(NewNDShape(2, 3), []float64{
+			input: NewArray(NewShape(2, 3), []float64{
 				1, 2, 3,
 				4, 5, 6,
 			}).Segment(0),
@@ -79,7 +79,7 @@ func TestNDArrayString(t *testing.T) {
 		},
 		{
 			msg: "(2, 3).Segment(1)",
-			input: NewNDArray(NewNDShape(2, 3), []float64{
+			input: NewArray(NewShape(2, 3), []float64{
 				1, 2, 3,
 				4, 5, 6,
 			}).Segment(1),
@@ -87,7 +87,7 @@ func TestNDArrayString(t *testing.T) {
 		},
 		{
 			msg: "(2, 3)",
-			input: NewNDArray(NewNDShape(2, 3), []float64{
+			input: NewArray(NewShape(2, 3), []float64{
 				1, 2, 3,
 				4, 5, 6,
 			}),
@@ -95,7 +95,7 @@ func TestNDArrayString(t *testing.T) {
 		},
 		{
 			msg: "(2, 3).Transpose(1, 0)",
-			input: NewNDArray(NewNDShape(2, 3), []float64{
+			input: NewArray(NewShape(2, 3), []float64{
 				1, 2, 3,
 				4, 5, 6,
 			}).Transpose(1, 0),
@@ -103,7 +103,7 @@ func TestNDArrayString(t *testing.T) {
 		},
 		{
 			msg: "(2, 3, 4).Transpose(1, 2, 0).Segment(0)",
-			input: NewNDArray(NewNDShape(2, 3, 4), []float64{
+			input: NewArray(NewShape(2, 3, 4), []float64{
 				1, 2, 3, 4,
 				5, 6, 7, 8,
 				9, 10, 11, 12,
@@ -116,7 +116,7 @@ func TestNDArrayString(t *testing.T) {
 		},
 		{
 			msg: "(2, 3, 4).Segment(0).Transpose(1, 0)",
-			input: NewNDArray(NewNDShape(2, 3, 4), []float64{
+			input: NewArray(NewShape(2, 3, 4), []float64{
 				1, 2, 3, 4,
 				5, 6, 7, 8,
 				9, 10, 11, 12,
@@ -139,21 +139,21 @@ func TestNDArrayString(t *testing.T) {
 func TestTransposedShape(t *testing.T) {
 	cases := []struct {
 		msg    string
-		input  NDArray
+		input  Array
 		index  []int
-		expect NDShape
+		expect Shape
 	}{
 		{
 			msg:    "(2, 3).Traspose(1, 0)",
-			input:  NewNDArray(NewNDShape(2, 3), make([]float64, 6)),
+			input:  NewArray(NewShape(2, 3), make([]float64, 6)),
 			index:  []int{1, 0},
-			expect: NewNDShape(3, 2),
+			expect: NewShape(3, 2),
 		},
 		{
 			msg:    "(2, 3, 4).Traspose(1, 2, 0)",
-			input:  NewNDArray(NewNDShape(2, 3, 4), make([]float64, 24)),
+			input:  NewArray(NewShape(2, 3, 4), make([]float64, 24)),
 			index:  []int{1, 2, 0},
-			expect: NewNDShape(3, 4, 2),
+			expect: NewShape(3, 4, 2),
 		},
 	}
 
@@ -164,21 +164,21 @@ func TestTransposedShape(t *testing.T) {
 		}
 	}
 }
-func TestNDArrayTranspose(t *testing.T) {
+func TestArrayTranspose(t *testing.T) {
 	cases := []struct {
 		msg    string
-		array  NDArray
+		array  Array
 		index  []int
-		expect NDArray
+		expect Array
 	}{
 		{
 			msg: "(2, 3).Traspose(1, 0)",
-			array: NewNDArray(NewNDShape(2, 3), []float64{
+			array: NewArray(NewShape(2, 3), []float64{
 				1, 2, 3,
 				4, 5, 6,
 			}),
 			index: []int{1, 0},
-			expect: NewNDArray(NewNDShape(3, 2), []float64{
+			expect: NewArray(NewShape(3, 2), []float64{
 				1, 4,
 				2, 5,
 				3, 6,
@@ -186,7 +186,7 @@ func TestNDArrayTranspose(t *testing.T) {
 		},
 		{
 			msg: "(2, 3, 4).Traspose(1, 2, 0)",
-			array: NewNDArray(NewNDShape(2, 3, 4), []float64{
+			array: NewArray(NewShape(2, 3, 4), []float64{
 				1, 2, 3, 4,
 				5, 6, 7, 8,
 				9, 10, 11, 12,
@@ -196,7 +196,7 @@ func TestNDArrayTranspose(t *testing.T) {
 				21, 22, 23, 24,
 			}),
 			index: []int{1, 2, 0},
-			expect: NewNDArray(NewNDShape(3, 4, 2), []float64{
+			expect: NewArray(NewShape(3, 4, 2), []float64{
 				1, 13,
 				2, 14,
 				3, 15,
@@ -257,7 +257,7 @@ func TestIndexConvert(t *testing.T) {
 func TestShapeConvert(t *testing.T) {
 	cases := []struct {
 		msg    string
-		shape  NDShape
+		shape  Shape
 		table  []int
 		expect []int
 	}{
@@ -274,7 +274,7 @@ func TestShapeConvert(t *testing.T) {
 	}
 }
 func TestArrayIterator(t *testing.T) {
-	array := NewNDArray(NewNDShape(1, 2, 3), make([]float64, 6))
+	array := NewArray(NewShape(1, 2, 3), make([]float64, 6))
 
 	cases := []struct {
 		expect []int

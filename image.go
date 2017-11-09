@@ -7,7 +7,7 @@ import (
 	"github.com/gonum/matrix/mat64"
 
 	"github.com/ajiyoshi/gocnn/matrix"
-	nd "github.com/ajiyoshi/gocnn/ndarray"
+	"github.com/ajiyoshi/gocnn/nd"
 )
 
 type ImageStrage interface {
@@ -23,7 +23,7 @@ type ImageStrage interface {
 }
 
 type SimpleStrage struct {
-	data nd.NDArray
+	data nd.Array
 }
 
 var (
@@ -43,13 +43,13 @@ func NewEmptyStrage(s *ImageShape) *SimpleStrage {
 }
 
 func NewImages(s ImageShape, data []float64) *SimpleStrage {
-	array := nd.NewNDArray(nd.NewNDShape(s.n, s.ch, s.row, s.col), data)
+	array := nd.NewArray(nd.NewShape(s.n, s.ch, s.row, s.col), data)
 	return NewSimpleStrage(array)
 }
 
 func NewReshaped(s ImageShape, m mat64.Matrix) *SimpleStrage {
 	data := DumpMatrix(m)
-	return NewSimpleStrage(nd.NewNDArray(nd.NewNDShape(s.n, s.ch, s.row, s.col), data))
+	return NewSimpleStrage(nd.NewArray(nd.NewShape(s.n, s.ch, s.row, s.col), data))
 }
 
 func DumpMatrix(m mat64.Matrix) []float64 {
@@ -64,7 +64,7 @@ func DumpMatrix(m mat64.Matrix) []float64 {
 	return data
 }
 
-func NewSimpleStrage(a nd.NDArray) *SimpleStrage {
+func NewSimpleStrage(a nd.Array) *SimpleStrage {
 	return &SimpleStrage{a}
 }
 
