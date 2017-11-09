@@ -117,15 +117,7 @@ func (img *SimpleStrage) Matrix() mat64.Matrix {
 	return img.ToMatrix(s.n, s.ch*s.col*s.row)
 }
 func (img *SimpleStrage) ToMatrix(row, col int) mat64.Matrix {
-	ret := mat64.NewDense(row, col, make([]float64, col*row))
-	itr := img.data.Iterator()
-	for j := 0; j < row; j++ {
-		for i := 0; i < col; i++ {
-			ret.Set(j, i, itr.Value())
-			itr.Next()
-		}
-	}
-	return ret
+	return img.data.AsMatrix(row, col)
 }
 
 func (img *SimpleStrage) Transpose(is ...int) ImageStrage {
