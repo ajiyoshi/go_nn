@@ -111,7 +111,7 @@ func (p *Pooling) Forwad(x Image) Image {
 	s := x.Shape()
 	outRow := 1 + (s.Row-p.Row)/p.Stride
 	outCol := 1 + (s.Col-p.Col)/p.Stride
-	return NewReshaped(NewShape(s.N, outRow, outCol, s.Ch), out).Transpose(0, 3, 1, 2)
+	return NewImages(NewShape(s.N, outRow, outCol, s.Ch), out).Transpose(0, 3, 1, 2)
 }
 
 func (p *Pooling) Backword(doutImage Image) Image {
@@ -156,7 +156,7 @@ func argmaxEachRow(m mat.Matrix) []int {
 	}
 	return ret
 }
-func maxEachRow(m mat.Matrix) mat.Matrix {
+func maxEachRow(m mat.Matrix) []float64 {
 	row, col := m.Dims()
 	buf := make([]float64, col)
 	ret := make([]float64, row)
@@ -164,5 +164,5 @@ func maxEachRow(m mat.Matrix) mat.Matrix {
 		mat.Row(buf, i, m)
 		ret[i] = mat.Max(mat.NewVector(col, buf))
 	}
-	return mat.NewDense(row, 1, ret)
+	return ret
 }
