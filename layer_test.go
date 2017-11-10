@@ -122,7 +122,7 @@ func TestBackword(t *testing.T) {
 	y := conv.Forward(x)
 	actual := conv.Backword(y)
 
-	expect := NewSimpleStrage(nd.NewArray(nd.NewShape(1, 1, 2, 2), []float64{
+	expect := NewArrayImage(nd.NewArray(nd.NewShape(1, 1, 2, 2), []float64{
 		0.0006555762625782, 8.841391855100008e-05,
 		0.0007738472404583999, 0.0006187933526248,
 	}))
@@ -140,16 +140,16 @@ func TestPooling(t *testing.T) {
 			msg: "",
 			generate: func() (p *Pooling, x, forward, backward Image) {
 				p = &Pooling{Row: 2, Col: 2, Stride: 1, Pad: 0}
-				x = NewSimpleStrage(nd.NewArray(nd.Shape{1, 1, 3, 3}, []float64{
+				x = NewArrayImage(nd.NewArray(nd.Shape{1, 1, 3, 3}, []float64{
 					1, 2, 3,
 					6, 5, 4,
 					8, 9, 7,
 				}))
-				forward = NewSimpleStrage(nd.NewArray(nd.Shape{1, 1, 2, 2}, []float64{
+				forward = NewArrayImage(nd.NewArray(nd.Shape{1, 1, 2, 2}, []float64{
 					6, 5,
 					9, 9,
 				}))
-				backward = NewSimpleStrage(nd.NewArray(nd.Shape{1, 1, 3, 3}, []float64{
+				backward = NewArrayImage(nd.NewArray(nd.Shape{1, 1, 3, 3}, []float64{
 					0, 0, 0,
 					6, 5, 0,
 					0, 18, 0,
@@ -161,15 +161,15 @@ func TestPooling(t *testing.T) {
 			msg: "",
 			generate: func() (p *Pooling, x, forward, backward Image) {
 				p = &Pooling{Row: 3, Col: 3, Stride: 1, Pad: 0}
-				x = NewSimpleStrage(nd.NewArray(nd.Shape{1, 1, 3, 3}, []float64{
+				x = NewArrayImage(nd.NewArray(nd.Shape{1, 1, 3, 3}, []float64{
 					1, 2, 3,
 					6, 5, 4,
 					8, 9, 7,
 				}))
-				forward = NewSimpleStrage(nd.NewArray(nd.Shape{1, 1, 1, 1}, []float64{
+				forward = NewArrayImage(nd.NewArray(nd.Shape{1, 1, 1, 1}, []float64{
 					9,
 				}))
-				backward = NewSimpleStrage(nd.NewArray(nd.Shape{1, 1, 3, 3}, []float64{
+				backward = NewArrayImage(nd.NewArray(nd.Shape{1, 1, 3, 3}, []float64{
 					0, 0, 0,
 					0, 0, 0,
 					0, 9, 0,

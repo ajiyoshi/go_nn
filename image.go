@@ -38,17 +38,25 @@ type Shape struct {
 	Col int
 }
 
+func (s *Shape) Size() int {
+	return s.N * s.Ch * s.Row * s.Col
+}
+
 func NewEmptyStrage(s *Shape) *ArrayImage {
-	data := make([]float64, s.N*s.Ch*s.Row*s.Col)
+	data := make([]float64, s.Size())
 	return NewImages(s, data)
 }
 
 func NewImages(s *Shape, data []float64) *ArrayImage {
 	array := nd.NewArray(nd.NewShape(s.N, s.Ch, s.Row, s.Col), data)
-	return NewSimpleStrage(array)
+	return NewArrayImage(array)
 }
 
 func NewReshaped(s *Shape, m mat.Matrix) *ArrayImage {
+	r, c := m.Dims()
+	if s.Size() != r*c {
+		panic("size should be equal")
+	}
 	data := DumpMatrix(m)
 	return NewImages(s, data)
 }
@@ -69,7 +77,7 @@ func DumpMatrix(m mat.Matrix) []float64 {
 	return data
 }
 
-func NewSimpleStrage(a nd.Array) *ArrayImage {
+func NewArrayImage(a nd.Array) *ArrayImage {
 	return &ArrayImage{a}
 }
 
@@ -122,7 +130,7 @@ func (img *ArrayImage) ToMatrix(row, col int) mat.Matrix {
 }
 
 func (img *ArrayImage) Transpose(is ...int) Image {
-	return NewSimpleStrage(img.data.Transpose(is...))
+	return NewArrayImage(img.data.Transpose(is...))
 }
 
 // (shape.n * outRow * outCol, shape.ch * filterRow * filterCol)
