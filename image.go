@@ -14,7 +14,7 @@ type Image interface {
 	Get(n, ch, r, c int) float64
 	Set(n, ch, r, c int, v float64)
 	Channels(n int) []mat.Mutable
-	Shape() Shape
+	Shape() *Shape
 	Matrix() mat.Matrix
 	String() string
 	Equal(Image) bool
@@ -34,23 +34,27 @@ var (
 type Shape struct {
 	N   int
 	Ch  int
-	Col int
 	Row int
+	Col int
 }
 
 func NewEmptyStrage(s *Shape) *ArrayImage {
 	data := make([]float64, s.N*s.Ch*s.Row*s.Col)
-	return NewImages(*s, data)
+	return NewImages(s, data)
 }
 
-func NewImages(s Shape, data []float64) *ArrayImage {
+func NewImages(s *Shape, data []float64) *ArrayImage {
 	array := nd.NewArray(nd.NewShape(s.N, s.Ch, s.Row, s.Col), data)
 	return NewSimpleStrage(array)
 }
 
-func NewReshaped(s []int, m mat.Matrix) *ArrayImage {
+func NewReshaped(s *Shape, m mat.Matrix) *ArrayImage {
 	data := DumpMatrix(m)
-	return NewSimpleStrage(nd.NewArray(s, data))
+	return NewImages(s, data)
+}
+
+func NewShape(n, ch, row, col int) *Shape {
+	return &Shape{N: n, Ch: ch, Row: row, Col: col}
 }
 
 func DumpMatrix(m mat.Matrix) []float64 {
@@ -72,9 +76,9 @@ func NewSimpleStrage(a nd.Array) *ArrayImage {
 func (img *ArrayImage) Equal(that Image) bool {
 	return mat.EqualApprox(img.Matrix(), that.Matrix(), 0.001)
 }
-func (img *ArrayImage) Shape() Shape {
+func (img *ArrayImage) Shape() *Shape {
 	s := img.data.Shape()
-	return Shape{N: s[0], Ch: s[1], Row: s[2], Col: s[3]}
+	return &Shape{N: s[0], Ch: s[1], Row: s[2], Col: s[3]}
 }
 
 func (img *ArrayImage) Get(n, ch, r, c int) float64 {
@@ -149,11 +153,11 @@ func Im2col(is Image, filterR, filterC, stride, pad int) *mat.Dense {
 	return ret
 }
 
-func Col2im(m mat.Matrix, shape Shape, filterR, filterC, stride, pad int) Image {
+func Col2im(m mat.Matrix, shape *Shape, filterR, filterC, stride, pad int) Image {
 	outR := (shape.Row+2*pad-filterR)/stride + 1
 	outC := (shape.Col+2*pad-filterC)/stride + 1
 
-	ret := NewEmptyStrage(&shape)
+	ret := NewEmptyStrage(shape)
 	x := 0
 	for n := 0; n < shape.N; n++ {
 		ms := matrix.ZeroPad(ret.Channels(n), pad)

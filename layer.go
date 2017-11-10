@@ -44,7 +44,7 @@ func (c *Convolution) Forward(x Image) Image {
 		return c.Bias.At(j, 0) + val
 	}, ret)
 
-	return NewReshaped([]int{xs.N, outRow, outCol, ws.N}, ret).Transpose(0, 3, 1, 2)
+	return NewReshaped(NewShape(xs.N, outRow, outCol, ws.N), ret).Transpose(0, 3, 1, 2)
 }
 
 func (c *Convolution) Backword(doutImg Image) Image {
@@ -66,7 +66,7 @@ func (c *Convolution) Backword(doutImg Image) Image {
 
 	c.dBias = matrix.SumCols(dout, c.dBias)
 	dWeight := mul(c.col.T(), dout)
-	c.dWeight = NewReshaped([]int{s.N, s.Ch, s.Row, s.Col}, dWeight.T())
+	c.dWeight = NewReshaped(NewShape(s.N, s.Ch, s.Row, s.Col), dWeight.T())
 
 	dcol := mul(dout, c.colW.T())
 	dx := Col2im(dcol, c.x.Shape(), s.Row, s.Col, c.Stride, c.Pad)
@@ -111,7 +111,7 @@ func (p *Pooling) Forwad(x Image) Image {
 	s := x.Shape()
 	outRow := 1 + (s.Row-p.Row)/p.Stride
 	outCol := 1 + (s.Col-p.Col)/p.Stride
-	return NewReshaped([]int{s.N, outRow, outCol, s.Ch}, out).Transpose(0, 3, 1, 2)
+	return NewReshaped(NewShape(s.N, outRow, outCol, s.Ch), out).Transpose(0, 3, 1, 2)
 }
 
 func (p *Pooling) Backword(doutImage Image) Image {
