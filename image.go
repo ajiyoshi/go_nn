@@ -20,10 +20,11 @@ type Image interface {
 	ToMatrix(row, col int) mat.Matrix
 	ToArray() nd.Array
 	Size() int
-	Scale(float64)
-	AddSalar(float64)
-	AddEach(Image)
-	MulEach(Image)
+
+	Scale(float64) Image
+	AddSalar(float64) Image
+	AddEach(Image) Image
+	MulEach(Image) Image
 }
 
 type ArrayImage struct {
@@ -62,6 +63,12 @@ func NewReshaped(s *Shape, m mat.Matrix) *ArrayImage {
 	}
 	data := DumpMatrix(m)
 	return NewImages(s, data)
+}
+
+func NewRandomImage(s *Shape, weight float64) *ArrayImage {
+	m := matrix.RandamDense(1, s.Size())
+	m.Scale(weight, m)
+	return NewReshaped(s, m)
 }
 
 func NewShape(n, ch, row, col int) *Shape {
@@ -128,17 +135,21 @@ func (img *ArrayImage) ToMatrix(row, col int) mat.Matrix {
 func (img *ArrayImage) ToArray() nd.Array {
 	return img.data
 }
-func (img *ArrayImage) Scale(k float64) {
+func (img *ArrayImage) Scale(k float64) Image {
 	img.ToArray().Scale(k)
+	return img
 }
-func (img *ArrayImage) AddSalar(k float64) {
+func (img *ArrayImage) AddSalar(k float64) Image {
 	img.ToArray().AddSalar(k)
+	return img
 }
-func (img *ArrayImage) AddEach(y Image) {
+func (img *ArrayImage) AddEach(y Image) Image {
 	img.ToArray().AddEach(y.ToArray())
+	return img
 }
-func (img *ArrayImage) MulEach(y Image) {
+func (img *ArrayImage) MulEach(y Image) Image {
 	img.ToArray().MulEach(y.ToArray())
+	return img
 }
 
 func (img *ArrayImage) Transpose(is ...int) Image {

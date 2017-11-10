@@ -21,6 +21,15 @@ type Convolution struct {
 	x       Image
 }
 
+func NewConvolution(s *Shape, stride, pad int, opt optimizer.Optimizer) *Convolution {
+	return &Convolution{
+		Weight:    NewRandomImage(s, WeightInitStd),
+		Bias:      mat.NewVector(s.N, nil),
+		Stride:    stride,
+		Pad:       pad,
+		Optimizer: opt,
+	}
+}
 func (c *Convolution) Forward(x Image) Image {
 	xs := x.Shape()
 	ws := c.Weight.Shape()
@@ -64,14 +73,19 @@ func (c *Convolution) Backword(doutImg Image) Image {
 	s := c.Weight.Shape()
 	dout := doutImg.Transpose(0, 2, 3, 1).ToMatrix(doutImg.Size()/s.N, s.N)
 
-	c.dBias = matrix.SumCols(dout, c.dBias)
 	dWeight := mul(c.col.T(), dout)
-	c.dWeight = NewReshaped(NewShape(s.N, s.Ch, s.Row, s.Col), dWeight.T())
+	c.dWeight = NewReshaped(s, dWeight.T())
+	c.dBias = matrix.SumCols(dout, c.dBias)
 
 	dcol := mul(dout, c.colW.T())
 	dx := Col2im(dcol, c.x.Shape(), s.Row, s.Col, c.Stride, c.Pad)
 
 	return dx
+}
+
+func (c *Convolution) Update() {
+	c.Optimizer.UpdateWeightArray(c.Weight.ToArray(), c.dWeight.ToArray())
+	c.Optimizer.UpdateBias(c.Bias, c.dBias)
 }
 
 type Pooling struct {
@@ -140,6 +154,8 @@ func (p *Pooling) Backword(doutImage Image) Image {
 	return Col2im(dmax, p.x.Shape(), p.Row, p.Col, p.Stride, p.Pad)
 }
 
+func (p *Pooling) Update() {}
+
 type ReLU struct {
 	mask *mat.Dense
 }
@@ -165,6 +181,8 @@ func (r *ReLU) Backword(dout Image) Image {
 	r.mask.MulElem(r.mask, m)
 	return NewReshaped(dout.Shape(), r.mask)
 }
+
+func (r *ReLU) Update() {}
 
 func mul(x, y mat.Matrix) *mat.Dense {
 	var ret mat.Dense
