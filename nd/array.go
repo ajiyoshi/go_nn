@@ -15,7 +15,7 @@ type Array interface {
 	Transpose(is ...int) Array
 	String() string
 	DeepEqual(Array) bool
-	AsMatrix(row, col int) mat.Matrix
+	AsMatrix(row, col int) mat.Mutable
 }
 
 type Shape []int
@@ -96,7 +96,7 @@ func (x *ndArray) DeepEqual(y Array) bool {
 	return mat.EqualApprox(this, that, 0.01)
 }
 
-func (x *ndArray) AsMatrix(row, col int) mat.Matrix {
+func (x *ndArray) AsMatrix(row, col int) mat.Mutable {
 	return NewMatrix(row, col, x)
 }
 

@@ -103,19 +103,12 @@ func (img *SimpleStrage) String() string {
 func (img *SimpleStrage) Channels(n int) []mat.Mutable {
 	shape := img.Shape()
 	ret := make([]mat.Mutable, shape.ch)
+	chs := img.data.Segment(n)
 	for i := 0; i < shape.ch; i++ {
-		ret[i] = img.ChannelMatrix(n, i)
+		ret[i] = chs.Segment(i).AsMatrix(shape.row, shape.col)
 	}
 	return ret
 }
-func (img *SimpleStrage) ChannelMatrix(n, ch int) *ChannelMatrix {
-	return &ChannelMatrix{
-		img: img,
-		n:   n,
-		ch:  ch,
-	}
-}
-
 func (img *SimpleStrage) Matrix() mat.Matrix {
 	s := img.Shape()
 	return img.ToMatrix(s.n, s.ch*s.col*s.row)
@@ -187,28 +180,8 @@ func Col2im(m mat.Matrix, shape ImageShape, filterR, filterC, stride, pad int) I
 }
 
 var (
-	_ mat.Mutable = &ChannelMatrix{}
-	_ mat.Matrix  = &reshapedMatrix{}
+	_ mat.Matrix = &reshapedMatrix{}
 )
-
-type ChannelMatrix struct {
-	img   ImageStrage
-	n, ch int
-}
-
-func (m *ChannelMatrix) At(i, j int) float64 {
-	return m.img.Get(m.n, m.ch, i, j)
-}
-func (m *ChannelMatrix) Set(i, j int, x float64) {
-	m.img.Set(m.n, m.ch, i, j, x)
-}
-func (m *ChannelMatrix) Dims() (int, int) {
-	shape := m.img.Shape()
-	return shape.row, shape.col
-}
-func (m *ChannelMatrix) T() mat.Matrix {
-	return matrix.NewTransposeMutable(m)
-}
 
 type reshapedMatrix struct {
 	row, col int

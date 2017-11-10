@@ -29,8 +29,8 @@ func (c *Convolution) Forward(x ImageStrage) ImageStrage {
 		panic("number of channels was not match")
 	}
 
-	outRow := int(1 + (xs.row+2*c.Pad-ws.row)/c.Stride)
-	outCol := int(1 + (xs.row+2*c.Pad-ws.row)/c.Stride)
+	outRow := 1 + (xs.row+2*c.Pad-ws.row)/c.Stride
+	outCol := 1 + (xs.row+2*c.Pad-ws.row)/c.Stride
 
 	// col : (xs.n*outRow*outCol, xs.ch*ws.row*ws.col)
 	c.col = Im2col(x, ws.row, ws.col, c.Stride, c.Pad)
