@@ -6,10 +6,11 @@ import (
 	mat "github.com/gonum/matrix/mat64"
 )
 
+func newShape(n, ch, r, c int) ImageShape {
+	return ImageShape{N: n, Ch: ch, Row: r, Col: c}
+}
+
 func TestCol2im(t *testing.T) {
-	shape := func(n, ch, r, c int) ImageShape {
-		return ImageShape{n: n, ch: ch, row: r, col: c}
-	}
 	cases := []struct {
 		title  string
 		shape  ImageShape
@@ -23,7 +24,7 @@ func TestCol2im(t *testing.T) {
 	}{
 		{
 			title: "col2im",
-			shape: shape(2, 1, 3, 3),
+			shape: newShape(2, 1, 3, 3),
 			image: []float64{
 				1, 2, 3,
 				4, 5, 6,
@@ -52,7 +53,7 @@ func TestCol2im(t *testing.T) {
 		},
 		{
 			title: "col2im",
-			shape: shape(1, 2, 3, 3),
+			shape: newShape(1, 2, 3, 3),
 			image: []float64{
 				1, 2, 3,
 				4, 5, 6,
@@ -83,7 +84,7 @@ func TestCol2im(t *testing.T) {
 		},
 		{
 			title: "im2col",
-			shape: shape(1, 2, 2, 2),
+			shape: newShape(1, 2, 2, 2),
 			image: []float64{
 				1, 2,
 				3, 4,
@@ -116,7 +117,7 @@ func TestCol2im(t *testing.T) {
 
 		{
 			title: "im2col",
-			shape: shape(2, 1, 2, 2),
+			shape: newShape(2, 1, 2, 2),
 			image: []float64{
 				1, 2,
 				3, 4,
@@ -176,9 +177,6 @@ func TestCol2im(t *testing.T) {
 }
 
 func TestImageMatrix(t *testing.T) {
-	shape := func(n, ch, r, c int) ImageShape {
-		return ImageShape{n: n, ch: ch, row: r, col: c}
-	}
 	cases := []struct {
 		title  string
 		shape  ImageShape
@@ -187,7 +185,7 @@ func TestImageMatrix(t *testing.T) {
 	}{
 		{
 			title: "image matrix",
-			shape: shape(2, 1, 3, 3),
+			shape: newShape(2, 1, 3, 3),
 			image: []float64{
 				1, 2, 3,
 				4, 5, 6,
@@ -204,7 +202,7 @@ func TestImageMatrix(t *testing.T) {
 		},
 		{
 			title: "image matrix",
-			shape: shape(1, 2, 2, 2),
+			shape: newShape(1, 2, 2, 2),
 			image: []float64{
 				1, 2,
 				3, 4,
@@ -230,9 +228,6 @@ func TestImageMatrix(t *testing.T) {
 }
 
 func TestImageString(t *testing.T) {
-	shape := func(n, ch, r, c int) ImageShape {
-		return ImageShape{n: n, ch: ch, row: r, col: c}
-	}
 	cases := []struct {
 		title  string
 		input  *SimpleStrage
@@ -240,7 +235,7 @@ func TestImageString(t *testing.T) {
 	}{
 		{
 			title: "image matrix string",
-			input: NewImages(shape(1, 2, 2, 3), []float64{
+			input: NewImages(newShape(1, 2, 2, 3), []float64{
 				1, 2, 3,
 				4, 5, 6,
 
@@ -267,9 +262,6 @@ func TestImageString(t *testing.T) {
 }
 
 func TestReshape(t *testing.T) {
-	shape := func(n, ch, r, c int) []int {
-		return []int{n, ch, r, c}
-	}
 	cases := []struct {
 		title  string
 		shape  []int
@@ -284,7 +276,7 @@ func TestReshape(t *testing.T) {
 				7, 8, 9,
 				8, 7, 6,
 			}),
-			shape: shape(1, 2, 2, 3),
+			shape: []int{1, 2, 2, 3},
 			expect: `{
 ⎡1  2  3⎤
 ⎣4  5  6⎦
@@ -301,7 +293,7 @@ func TestReshape(t *testing.T) {
 				7, 8, 9,
 				8, 7, 6,
 			}),
-			shape: shape(2, 1, 2, 3),
+			shape: []int{2, 1, 2, 3},
 			expect: `{
 ⎡1  2  3⎤
 ⎣4  5  6⎦
@@ -326,7 +318,7 @@ func TestReshape(t *testing.T) {
 				1.5, 1.6,
 				1.6, 1.7,
 			}),
-			shape: shape(1, 3, 3, 2),
+			shape: []int{1, 3, 3, 2},
 			expect: `{
 ⎡0.1  0.2⎤
 ⎢0.3  0.4⎥
@@ -353,7 +345,7 @@ func TestReshape(t *testing.T) {
 				1.5, 1.6,
 				1.6, 1.7,
 			}),
-			shape: shape(3, 3, 1, 2),
+			shape: []int{3, 3, 1, 2},
 			expect: `{
 [0.1  0.2]
 [0.3  0.4]

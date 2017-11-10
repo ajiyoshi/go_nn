@@ -32,19 +32,19 @@ var (
 )
 
 type ImageShape struct {
-	n   int
-	ch  int
-	col int
-	row int
+	N   int
+	Ch  int
+	Col int
+	Row int
 }
 
 func NewEmptyStrage(s *ImageShape) *SimpleStrage {
-	data := make([]float64, s.n*s.ch*s.row*s.col)
+	data := make([]float64, s.N*s.Ch*s.Row*s.Col)
 	return NewImages(*s, data)
 }
 
 func NewImages(s ImageShape, data []float64) *SimpleStrage {
-	array := nd.NewArray(nd.NewShape(s.n, s.ch, s.row, s.col), data)
+	array := nd.NewArray(nd.NewShape(s.N, s.Ch, s.Row, s.Col), data)
 	return NewSimpleStrage(array)
 }
 
@@ -74,7 +74,7 @@ func (img *SimpleStrage) Equal(that ImageStrage) bool {
 }
 func (img *SimpleStrage) Shape() ImageShape {
 	s := img.data.Shape()
-	return ImageShape{n: s[0], ch: s[1], row: s[2], col: s[3]}
+	return ImageShape{N: s[0], Ch: s[1], Row: s[2], Col: s[3]}
 }
 
 func (img *SimpleStrage) Get(n, ch, r, c int) float64 {
@@ -89,7 +89,7 @@ func (img *SimpleStrage) Size() int {
 
 func (img *SimpleStrage) String() string {
 	var buf bytes.Buffer
-	for n := 0; n < img.Shape().n; n++ {
+	for n := 0; n < img.Shape().N; n++ {
 		chs := img.Channels(n)
 		buf.WriteString("{\n")
 		for _, m := range chs {
@@ -102,16 +102,16 @@ func (img *SimpleStrage) String() string {
 
 func (img *SimpleStrage) Channels(n int) []mat.Mutable {
 	shape := img.Shape()
-	ret := make([]mat.Mutable, shape.ch)
+	ret := make([]mat.Mutable, shape.Ch)
 	chs := img.data.Segment(n)
-	for i := 0; i < shape.ch; i++ {
-		ret[i] = chs.Segment(i).AsMatrix(shape.row, shape.col)
+	for i := 0; i < shape.Ch; i++ {
+		ret[i] = chs.Segment(i).AsMatrix(shape.Row, shape.Col)
 	}
 	return ret
 }
 func (img *SimpleStrage) Matrix() mat.Matrix {
 	s := img.Shape()
-	return img.ToMatrix(s.n, s.ch*s.col*s.row)
+	return img.ToMatrix(s.N, s.Ch*s.Col*s.Row)
 }
 func (img *SimpleStrage) ToMatrix(row, col int) mat.Matrix {
 	return img.data.AsMatrix(row, col)
@@ -124,14 +124,14 @@ func (img *SimpleStrage) Transpose(is ...int) ImageStrage {
 // (shape.n * outRow * outCol, shape.ch * filterRow * filterCol)
 func Im2col(is ImageStrage, filterR, filterC, stride, pad int) *mat.Dense {
 	shape := is.Shape()
-	outR := (shape.row+2*pad-filterR)/stride + 1
-	outC := (shape.col+2*pad-filterC)/stride + 1
-	rows := shape.n * outR * outC
-	cols := shape.ch * filterR * filterC
+	outR := (shape.Row+2*pad-filterR)/stride + 1
+	outC := (shape.Col+2*pad-filterC)/stride + 1
+	rows := shape.N * outR * outC
+	cols := shape.Ch * filterR * filterC
 
 	x := 0
 	ret := mat.NewDense(rows, cols, nil)
-	for n := 0; n < shape.n; n++ {
+	for n := 0; n < shape.N; n++ {
 		ms := matrix.ZeroPad(is.Channels(n), pad)
 		for i := 0; i < outR; i++ {
 			for j := 0; j < outC; j++ {
@@ -150,12 +150,12 @@ func Im2col(is ImageStrage, filterR, filterC, stride, pad int) *mat.Dense {
 }
 
 func Col2im(m mat.Matrix, shape ImageShape, filterR, filterC, stride, pad int) ImageStrage {
-	outR := (shape.row+2*pad-filterR)/stride + 1
-	outC := (shape.col+2*pad-filterC)/stride + 1
+	outR := (shape.Row+2*pad-filterR)/stride + 1
+	outC := (shape.Col+2*pad-filterC)/stride + 1
 
 	ret := NewEmptyStrage(&shape)
 	x := 0
-	for n := 0; n < shape.n; n++ {
+	for n := 0; n < shape.N; n++ {
 		ms := matrix.ZeroPad(ret.Channels(n), pad)
 
 		for i := 0; i < outR; i++ {

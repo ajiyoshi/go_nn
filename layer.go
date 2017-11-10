@@ -25,15 +25,15 @@ func (c *Convolution) Forward(x ImageStrage) ImageStrage {
 	xs := x.Shape()
 	ws := c.Weight.Shape()
 
-	if xs.ch != ws.ch {
+	if xs.Ch != ws.Ch {
 		panic("number of channels was not match")
 	}
 
-	outRow := 1 + (xs.row+2*c.Pad-ws.row)/c.Stride
-	outCol := 1 + (xs.row+2*c.Pad-ws.row)/c.Stride
+	outRow := 1 + (xs.Row+2*c.Pad-ws.Row)/c.Stride
+	outCol := 1 + (xs.Row+2*c.Pad-ws.Row)/c.Stride
 
 	// col : (xs.n*outRow*outCol, xs.ch*ws.row*ws.col)
-	c.col = Im2col(x, ws.row, ws.col, c.Stride, c.Pad)
+	c.col = Im2col(x, ws.Row, ws.Col, c.Stride, c.Pad)
 	// colW : (ws.ch*ws.row*ws.col, ws.n)
 	c.colW = c.Weight.Matrix().T()
 	c.x = x
@@ -44,7 +44,7 @@ func (c *Convolution) Forward(x ImageStrage) ImageStrage {
 		return c.Bias.At(j, 0) + val
 	}, ret)
 
-	return NewReshaped([]int{xs.n, outRow, outCol, ws.n}, ret).Transpose(0, 3, 1, 2)
+	return NewReshaped([]int{xs.N, outRow, outCol, ws.N}, ret).Transpose(0, 3, 1, 2)
 }
 
 func (c *Convolution) Backword(doutImg ImageStrage) ImageStrage {
@@ -62,14 +62,14 @@ func (c *Convolution) Backword(doutImg ImageStrage) ImageStrage {
 		return dx
 	*/
 	s := c.Weight.Shape()
-	dout := doutImg.Transpose(0, 2, 3, 1).ToMatrix(doutImg.Size()/s.n, s.n)
+	dout := doutImg.Transpose(0, 2, 3, 1).ToMatrix(doutImg.Size()/s.N, s.N)
 
 	c.dBias = matrix.SumCols(dout, c.dBias)
 	dWeight := mul(c.col.T(), dout)
-	c.dWeight = NewReshaped([]int{s.n, s.ch, s.row, s.col}, dWeight.T())
+	c.dWeight = NewReshaped([]int{s.N, s.Ch, s.Row, s.Col}, dWeight.T())
 
 	dcol := mul(dout, c.colW.T())
-	dx := Col2im(dcol, c.x.Shape(), s.row, s.col, c.Stride, c.Pad)
+	dx := Col2im(dcol, c.x.Shape(), s.Row, s.Col, c.Stride, c.Pad)
 
 	return dx
 }
@@ -109,9 +109,9 @@ func (p *Pooling) Forwad(x ImageStrage) ImageStrage {
 	out := maxEachRow(col)
 
 	s := x.Shape()
-	outRow := 1 + (s.row-p.Row)/p.Stride
-	outCol := 1 + (s.col-p.Col)/p.Stride
-	return NewReshaped([]int{s.n, outRow, outCol, s.ch}, out).Transpose(0, 3, 1, 2)
+	outRow := 1 + (s.Row-p.Row)/p.Stride
+	outCol := 1 + (s.Col-p.Col)/p.Stride
+	return NewReshaped([]int{s.N, outRow, outCol, s.Ch}, out).Transpose(0, 3, 1, 2)
 }
 
 func (p *Pooling) Backword(doutImage ImageStrage) ImageStrage {

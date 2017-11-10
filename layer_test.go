@@ -22,12 +22,12 @@ func TestForward(t *testing.T) {
 				filterNum := 1
 				filterSize := 3
 				dataNum, chNum, xCol, xRow := 1, 1, 2, 2
-				x := NewImages(ImageShape{n: dataNum, ch: chNum, col: xCol, row: xRow}, []float64{
+				x := NewImages(ImageShape{N: dataNum, Ch: chNum, Col: xCol, Row: xRow}, []float64{
 					1, 2,
 					3, 4,
 				})
 
-				w := NewImages(ImageShape{n: filterNum, ch: chNum, col: filterSize, row: filterSize}, []float64{
+				w := NewImages(ImageShape{N: filterNum, Ch: chNum, Col: filterSize, Row: filterSize}, []float64{
 					0.01061144, 0.00930966, 0.00157138,
 					0.01366734, 0.00596517, -0.00052856,
 					-0.0022351, -0.00402149, -0.00019544,
@@ -52,12 +52,12 @@ func TestForward(t *testing.T) {
 				filterNum := 2
 				filterSize := 3
 				dataNum, chNum, xCol, xRow := 1, 1, 2, 2
-				x := NewImages(ImageShape{n: dataNum, ch: chNum, col: xCol, row: xRow}, []float64{
+				x := NewImages(ImageShape{N: dataNum, Ch: chNum, Col: xCol, Row: xRow}, []float64{
 					1, 2,
 					3, 4,
 				})
 
-				w := NewImages(ImageShape{n: filterNum, ch: chNum, col: filterSize, row: filterSize}, []float64{
+				w := NewImages(ImageShape{N: filterNum, Ch: chNum, Col: filterSize, Row: filterSize}, []float64{
 					-0.00205192, -0.01427015, 0.01118195,
 					-0.00115402, 0.00920227, -0.00072591,
 					0.00013398, 0.00050144, -0.01106872,
@@ -98,12 +98,12 @@ func TestBackword(t *testing.T) {
 	filterNum := 2
 	filterSize := 3
 	dataNum, chNum, xCol, xRow := 1, 1, 2, 2
-	x := NewImages(ImageShape{n: dataNum, ch: chNum, col: xCol, row: xRow}, []float64{
+	x := NewImages(ImageShape{N: dataNum, Ch: chNum, Col: xCol, Row: xRow}, []float64{
 		1, 2,
 		3, 4,
 	})
 
-	w := NewImages(ImageShape{n: filterNum, ch: chNum, col: filterSize, row: filterSize}, []float64{
+	w := NewImages(ImageShape{N: filterNum, Ch: chNum, Col: filterSize, Row: filterSize}, []float64{
 		-0.00431678, 0.00845254, 0.00188367,
 		0.0036537, -0.00328172, 0.0070477,
 		0.0162438, -0.00225665, -0.00838634,
