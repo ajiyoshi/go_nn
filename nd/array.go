@@ -17,6 +17,7 @@ type Array interface {
 	Equals(Array) bool
 	EqualApprox(Array, float64) bool
 	AsMatrix(row, col int) mat.Mutable
+	Iterator() Iterator
 }
 
 type Shape []int
@@ -25,12 +26,25 @@ type Indexer interface {
 	At(is ...int) int
 }
 
+type Iterable interface {
+	Iterator() Iterator
+}
+
+type Iterator interface {
+	OK() bool
+	Index() []int
+	Next()
+}
+
 var (
 	_ Array = (*ndArray)(nil)
 
 	_ Indexer = (*NormalIndexer)(nil)
 	_ Indexer = (*TransposeIndexer)(nil)
 	_ Indexer = (*SubIndexer)(nil)
+
+	_ Iterable = (*ndArray)(nil)
+	_ Iterable = (Shape)(nil)
 )
 
 type ndArray struct {
@@ -102,6 +116,10 @@ func (x *ndArray) EqualApprox(y Array, e float64) bool {
 
 func (x *ndArray) AsMatrix(row, col int) mat.Mutable {
 	return NewMatrix(row, col, x)
+}
+
+func (x *ndArray) Iterator() Iterator {
+	return x.shape.Iterator()
 }
 
 func (s Shape) Size() int {

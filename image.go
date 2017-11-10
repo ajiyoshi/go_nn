@@ -11,15 +11,14 @@ import (
 )
 
 type Image interface {
-	Get(n, ch, r, c int) float64
-	Set(n, ch, r, c int, v float64)
 	Channels(n int) []mat.Mutable
 	Shape() *Shape
-	Matrix() mat.Matrix
 	String() string
 	Equal(Image) bool
 	Transpose(is ...int) Image
+	Matrix() mat.Matrix
 	ToMatrix(row, col int) mat.Matrix
+	ToArray() nd.Array
 	Size() int
 }
 
@@ -89,12 +88,6 @@ func (img *ArrayImage) Shape() *Shape {
 	return &Shape{N: s[0], Ch: s[1], Row: s[2], Col: s[3]}
 }
 
-func (img *ArrayImage) Get(n, ch, r, c int) float64 {
-	return img.data.Get(n, ch, r, c)
-}
-func (img *ArrayImage) Set(n, ch, r, c int, v float64) {
-	img.data.Set(v, n, ch, r, c)
-}
 func (img *ArrayImage) Size() int {
 	return img.data.Shape().Size()
 }
@@ -116,8 +109,8 @@ func (img *ArrayImage) Channels(n int) []mat.Mutable {
 	shape := img.Shape()
 	ret := make([]mat.Mutable, shape.Ch)
 	chs := img.data.Segment(n)
-	for i := 0; i < shape.Ch; i++ {
-		ret[i] = chs.Segment(i).AsMatrix(shape.Row, shape.Col)
+	for ch := 0; ch < shape.Ch; ch++ {
+		ret[ch] = chs.Segment(ch).AsMatrix(shape.Row, shape.Col)
 	}
 	return ret
 }
@@ -127,6 +120,9 @@ func (img *ArrayImage) Matrix() mat.Matrix {
 }
 func (img *ArrayImage) ToMatrix(row, col int) mat.Matrix {
 	return img.data.AsMatrix(row, col)
+}
+func (img *ArrayImage) ToArray() nd.Array {
+	return img.data
 }
 
 func (img *ArrayImage) Transpose(is ...int) Image {

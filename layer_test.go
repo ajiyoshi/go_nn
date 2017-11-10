@@ -181,7 +181,7 @@ func TestPooling(t *testing.T) {
 
 	for _, c := range cases {
 		pool, x, forward, backward := c.generate()
-		y := pool.Forwad(x)
+		y := pool.Forward(x)
 		if !y.Equal(forward) {
 			t.Fatalf("expect \n%v got \n%v", forward, y)
 		}

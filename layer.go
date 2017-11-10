@@ -8,17 +8,17 @@ import (
 )
 
 type Convolution struct {
-	Weight Image
-	Bias   *mat.Vector
-	Stride int
-	Pad    int
+	Weight    Image
+	Bias      *mat.Vector
+	Stride    int
+	Pad       int
+	Optimizer optimizer.Optimizer
 
-	dWeight   Image
-	dBias     *mat.Vector
-	col       mat.Matrix
-	colW      mat.Matrix
-	x         Image
-	optimizer optimizer.Optimizer
+	dWeight Image
+	dBias   *mat.Vector
+	col     mat.Matrix
+	colW    mat.Matrix
+	x       Image
 }
 
 func (c *Convolution) Forward(x Image) Image {
@@ -84,7 +84,7 @@ type Pooling struct {
 	x      Image
 }
 
-func (p *Pooling) Forwad(x Image) Image {
+func (p *Pooling) Forward(x Image) Image {
 	/*
 		N, C, H, W = x.shape
 		out_h = int(1 + (H - self.pool_h) / self.stride)
@@ -138,6 +138,32 @@ func (p *Pooling) Backword(doutImage Image) Image {
 	}
 
 	return Col2im(dmax, p.x.Shape(), p.Row, p.Col, p.Stride, p.Pad)
+}
+
+type ReLU struct {
+	mask *mat.Dense
+}
+
+func (r *ReLU) Forward(x Image) Image {
+	s := x.Shape()
+	r.mask = mat.NewDense(s.N, s.Size()/s.N, nil)
+	m := x.ToMatrix(s.N, s.Size()/s.N)
+
+	r.mask.Apply(func(i, j int, v float64) float64 {
+		if v < 0 {
+			return 0
+		} else {
+			return 1
+		}
+	}, m)
+
+	return NewReshaped(s, mul(r.mask, m))
+}
+func (r *ReLU) Backword(dout Image) Image {
+	row, col := r.mask.Dims()
+	m := dout.ToMatrix(row, col)
+	r.mask.MulElem(r.mask, m)
+	return NewReshaped(dout.Shape(), r.mask)
 }
 
 func mul(x, y mat.Matrix) *mat.Dense {
