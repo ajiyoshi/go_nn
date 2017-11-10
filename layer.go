@@ -1,6 +1,7 @@
 package gocnn
 
 import (
+	"fmt"
 	mat "github.com/gonum/matrix/mat64"
 
 	"github.com/ajiyoshi/gocnn/matrix"
@@ -35,7 +36,7 @@ func (c *Convolution) Forward(x Image) Image {
 	ws := c.Weight.Shape()
 
 	if xs.Ch != ws.Ch {
-		panic("number of channels was not match")
+		//panic("number of channels was not match")
 	}
 
 	outRow := 1 + (xs.Row+2*c.Pad-ws.Row)/c.Stride
@@ -151,6 +152,12 @@ func (p *Pooling) Backword(doutImage Image) Image {
 		dmax.Set(i, j, x)
 	}
 
+	fmt.Println(dmax.Dims())
+	fmt.Println(p.x.Shape())
+	fmt.Println(p.Row)
+	fmt.Println(p.Col)
+	fmt.Println(p.Stride)
+
 	return Col2im(dmax, p.x.Shape(), p.Row, p.Col, p.Stride, p.Pad)
 }
 
@@ -173,7 +180,9 @@ func (r *ReLU) Forward(x Image) Image {
 		}
 	}, m)
 
-	return NewReshaped(s, mul(r.mask, m))
+	r.mask.MulElem(r.mask, m)
+
+	return NewReshaped(s, r.mask)
 }
 func (r *ReLU) Backword(dout Image) Image {
 	row, col := r.mask.Dims()

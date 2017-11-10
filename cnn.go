@@ -8,7 +8,7 @@ import (
 
 type SimpleCNN struct {
 	imageLayers   []ImageLayer
-	imageToMatrix *ImageToMatrix
+	imageToMatrix ImageToMatrix
 	nn            *batch.NeuralNet
 }
 
@@ -21,7 +21,7 @@ func (cnn *SimpleCNN) Forward(img Image) mat.Matrix {
 func (cnn *SimpleCNN) Backword(m mat.Matrix) Image {
 	dout := cnn.imageToMatrix.Backword(m)
 	for _, layer := range LayerReverse(cnn.imageLayers) {
-		dout = layer.Forward(dout)
+		dout = layer.Backword(dout)
 	}
 	return dout
 }

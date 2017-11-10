@@ -10,7 +10,7 @@ const WeightInitStd = 0.1
 func NewSimpleConvNet() *SimpleCNN {
 	opt := optimizer.NewMomentumFactory(0.1, 0.1)
 	nnParam := &batch.NNParam{
-		InputSize:  28,
+		InputSize:  4320,
 		HiddenSize: 100,
 		OutputSize: 10,
 	}
@@ -18,6 +18,7 @@ func NewSimpleConvNet() *SimpleCNN {
 
 	cnnParam := &CNNParam{
 		FilterNum:  30,
+		Channel:    1,
 		FilterSize: 5,
 		Stride:     1,
 		Pad:        0,
