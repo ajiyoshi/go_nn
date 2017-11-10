@@ -20,6 +20,10 @@ type Image interface {
 	ToMatrix(row, col int) mat.Matrix
 	ToArray() nd.Array
 	Size() int
+	Scale(float64)
+	AddSalar(float64)
+	AddEach(Image)
+	MulEach(Image)
 }
 
 type ArrayImage struct {
@@ -81,7 +85,7 @@ func NewArrayImage(a nd.Array) *ArrayImage {
 }
 
 func (img *ArrayImage) Equal(that Image) bool {
-	return mat.EqualApprox(img.Matrix(), that.Matrix(), 0.001)
+	return img.data.Equals(that.ToArray())
 }
 func (img *ArrayImage) Shape() *Shape {
 	s := img.data.Shape()
@@ -123,6 +127,18 @@ func (img *ArrayImage) ToMatrix(row, col int) mat.Matrix {
 }
 func (img *ArrayImage) ToArray() nd.Array {
 	return img.data
+}
+func (img *ArrayImage) Scale(k float64) {
+	img.ToArray().Scale(k)
+}
+func (img *ArrayImage) AddSalar(k float64) {
+	img.ToArray().AddSalar(k)
+}
+func (img *ArrayImage) AddEach(y Image) {
+	img.ToArray().AddEach(y.ToArray())
+}
+func (img *ArrayImage) MulEach(y Image) {
+	img.ToArray().MulEach(y.ToArray())
 }
 
 func (img *ArrayImage) Transpose(is ...int) Image {

@@ -25,10 +25,13 @@ func (itr *ndArrayIterator) OK() bool {
 }
 func (itr *ndArrayIterator) Next() {
 	itr.i++
+}
+func (itr *ndArrayIterator) Reset() {
+	itr.i = 0
+}
+func (itr *ndArrayIterator) Index() []int {
 	for i, c := range itr.coef {
 		itr.buf[i] = itr.i / c % itr.shape[i]
 	}
-}
-func (itr *ndArrayIterator) Index() []int {
 	return itr.buf
 }

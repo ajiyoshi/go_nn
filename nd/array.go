@@ -18,6 +18,10 @@ type Array interface {
 	EqualApprox(Array, float64) bool
 	AsMatrix(row, col int) mat.Mutable
 	Iterator() Iterator
+	Scale(float64)
+	AddSalar(float64)
+	AddEach(Array)
+	MulEach(Array)
 }
 
 type Shape []int
@@ -33,6 +37,7 @@ type Iterable interface {
 type Iterator interface {
 	OK() bool
 	Index() []int
+	Reset()
 	Next()
 }
 
@@ -120,6 +125,43 @@ func (x *ndArray) AsMatrix(row, col int) mat.Mutable {
 
 func (x *ndArray) Iterator() Iterator {
 	return x.shape.Iterator()
+}
+
+func (x *ndArray) Scale(k float64) {
+	for i := x.Iterator(); i.OK(); i.Next() {
+		index := i.Index()
+		val := x.Get(index...)
+		x.Set(val*k, index...)
+	}
+}
+func (x *ndArray) AddSalar(k float64) {
+	for i := x.Iterator(); i.OK(); i.Next() {
+		index := i.Index()
+		val := x.Get(index...)
+		x.Set(val+k, index...)
+	}
+}
+func (x *ndArray) AddEach(y Array) {
+	if !x.Shape().Equals(y.Shape()) {
+		panic("shape should be same")
+	}
+	i := x.Shape().Iterator()
+	for i.Reset(); i.OK(); i.Next() {
+		index := i.Index()
+		a, b := x.Get(index...), y.Get(index...)
+		x.Set(a+b, index...)
+	}
+}
+func (x *ndArray) MulEach(y Array) {
+	if !x.Shape().Equals(y.Shape()) {
+		panic("shape should be same")
+	}
+	i := x.Shape().Iterator()
+	for i.Reset(); i.OK(); i.Next() {
+		index := i.Index()
+		a, b := x.Get(index...), y.Get(index...)
+		x.Set(a+b, index...)
+	}
 }
 
 func (s Shape) Size() int {
