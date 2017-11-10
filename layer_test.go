@@ -14,20 +14,20 @@ func TestForward(t *testing.T) {
 
 	cases := []struct {
 		msg      string
-		generate func() (c *Convolution, x, expect ImageStrage)
+		generate func() (c *Convolution, x, expect Image)
 	}{
 		{
 			msg: "実際に実行してみた結果",
-			generate: func() (*Convolution, ImageStrage, ImageStrage) {
+			generate: func() (*Convolution, Image, Image) {
 				filterNum := 1
 				filterSize := 3
 				dataNum, chNum, xCol, xRow := 1, 1, 2, 2
-				x := NewImages(ImageShape{N: dataNum, Ch: chNum, Col: xCol, Row: xRow}, []float64{
+				x := NewImages(Shape{N: dataNum, Ch: chNum, Col: xCol, Row: xRow}, []float64{
 					1, 2,
 					3, 4,
 				})
 
-				w := NewImages(ImageShape{N: filterNum, Ch: chNum, Col: filterSize, Row: filterSize}, []float64{
+				w := NewImages(Shape{N: filterNum, Ch: chNum, Col: filterSize, Row: filterSize}, []float64{
 					0.01061144, 0.00930966, 0.00157138,
 					0.01366734, 0.00596517, -0.00052856,
 					-0.0022351, -0.00402149, -0.00019544,
@@ -39,7 +39,7 @@ func TestForward(t *testing.T) {
 					Stride: 1,
 					Pad:    1,
 				}
-				expect := NewImages(ImageShape{dataNum, filterNum, 2, 2}, []float64{
+				expect := NewImages(Shape{dataNum, filterNum, 2, 2}, []float64{
 					-0.00793818, 0.00280642,
 					0.02823369, 0.09409346,
 				})
@@ -48,16 +48,16 @@ func TestForward(t *testing.T) {
 		},
 		{
 			msg: "実際に実行してみた結果",
-			generate: func() (*Convolution, ImageStrage, ImageStrage) {
+			generate: func() (*Convolution, Image, Image) {
 				filterNum := 2
 				filterSize := 3
 				dataNum, chNum, xCol, xRow := 1, 1, 2, 2
-				x := NewImages(ImageShape{N: dataNum, Ch: chNum, Col: xCol, Row: xRow}, []float64{
+				x := NewImages(Shape{N: dataNum, Ch: chNum, Col: xCol, Row: xRow}, []float64{
 					1, 2,
 					3, 4,
 				})
 
-				w := NewImages(ImageShape{N: filterNum, Ch: chNum, Col: filterSize, Row: filterSize}, []float64{
+				w := NewImages(Shape{N: filterNum, Ch: chNum, Col: filterSize, Row: filterSize}, []float64{
 					-0.00205192, -0.01427015, 0.01118195,
 					-0.00115402, 0.00920227, -0.00072591,
 					0.00013398, 0.00050144, -0.01106872,
@@ -73,7 +73,7 @@ func TestForward(t *testing.T) {
 					Stride: 1,
 					Pad:    1,
 				}
-				expect := NewImages(ImageShape{dataNum, filterNum, 2, 2}, []float64{
+				expect := NewImages(Shape{dataNum, filterNum, 2, 2}, []float64{
 					-0.03502013, 0.01965824,
 					0.0327969, 0.00275479,
 
@@ -98,12 +98,12 @@ func TestBackword(t *testing.T) {
 	filterNum := 2
 	filterSize := 3
 	dataNum, chNum, xCol, xRow := 1, 1, 2, 2
-	x := NewImages(ImageShape{N: dataNum, Ch: chNum, Col: xCol, Row: xRow}, []float64{
+	x := NewImages(Shape{N: dataNum, Ch: chNum, Col: xCol, Row: xRow}, []float64{
 		1, 2,
 		3, 4,
 	})
 
-	w := NewImages(ImageShape{N: filterNum, Ch: chNum, Col: filterSize, Row: filterSize}, []float64{
+	w := NewImages(Shape{N: filterNum, Ch: chNum, Col: filterSize, Row: filterSize}, []float64{
 		-0.00431678, 0.00845254, 0.00188367,
 		0.0036537, -0.00328172, 0.0070477,
 		0.0162438, -0.00225665, -0.00838634,
@@ -134,11 +134,11 @@ func TestBackword(t *testing.T) {
 func TestPooling(t *testing.T) {
 	cases := []struct {
 		msg      string
-		generate func() (p *Pooling, x, forward, backward ImageStrage)
+		generate func() (p *Pooling, x, forward, backward Image)
 	}{
 		{
 			msg: "",
-			generate: func() (p *Pooling, x, forward, backward ImageStrage) {
+			generate: func() (p *Pooling, x, forward, backward Image) {
 				p = &Pooling{Row: 2, Col: 2, Stride: 1, Pad: 0}
 				x = NewSimpleStrage(nd.NewArray(nd.Shape{1, 1, 3, 3}, []float64{
 					1, 2, 3,
@@ -159,7 +159,7 @@ func TestPooling(t *testing.T) {
 		},
 		{
 			msg: "",
-			generate: func() (p *Pooling, x, forward, backward ImageStrage) {
+			generate: func() (p *Pooling, x, forward, backward Image) {
 				p = &Pooling{Row: 3, Col: 3, Stride: 1, Pad: 0}
 				x = NewSimpleStrage(nd.NewArray(nd.Shape{1, 1, 3, 3}, []float64{
 					1, 2, 3,

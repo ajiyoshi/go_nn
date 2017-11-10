@@ -10,45 +10,45 @@ import (
 	"github.com/ajiyoshi/gocnn/nd"
 )
 
-type ImageStrage interface {
+type Image interface {
 	Get(n, ch, r, c int) float64
 	Set(n, ch, r, c int, v float64)
 	Channels(n int) []mat.Mutable
-	Shape() ImageShape
+	Shape() Shape
 	Matrix() mat.Matrix
 	String() string
-	Equal(ImageStrage) bool
-	Transpose(is ...int) ImageStrage
+	Equal(Image) bool
+	Transpose(is ...int) Image
 	ToMatrix(row, col int) mat.Matrix
 	Size() int
 }
 
-type SimpleStrage struct {
+type ArrayImage struct {
 	data nd.Array
 }
 
 var (
-	_ ImageStrage = &SimpleStrage{}
+	_ Image = (*ArrayImage)(nil)
 )
 
-type ImageShape struct {
+type Shape struct {
 	N   int
 	Ch  int
 	Col int
 	Row int
 }
 
-func NewEmptyStrage(s *ImageShape) *SimpleStrage {
+func NewEmptyStrage(s *Shape) *ArrayImage {
 	data := make([]float64, s.N*s.Ch*s.Row*s.Col)
 	return NewImages(*s, data)
 }
 
-func NewImages(s ImageShape, data []float64) *SimpleStrage {
+func NewImages(s Shape, data []float64) *ArrayImage {
 	array := nd.NewArray(nd.NewShape(s.N, s.Ch, s.Row, s.Col), data)
 	return NewSimpleStrage(array)
 }
 
-func NewReshaped(s []int, m mat.Matrix) *SimpleStrage {
+func NewReshaped(s []int, m mat.Matrix) *ArrayImage {
 	data := DumpMatrix(m)
 	return NewSimpleStrage(nd.NewArray(s, data))
 }
@@ -65,29 +65,29 @@ func DumpMatrix(m mat.Matrix) []float64 {
 	return data
 }
 
-func NewSimpleStrage(a nd.Array) *SimpleStrage {
-	return &SimpleStrage{a}
+func NewSimpleStrage(a nd.Array) *ArrayImage {
+	return &ArrayImage{a}
 }
 
-func (img *SimpleStrage) Equal(that ImageStrage) bool {
+func (img *ArrayImage) Equal(that Image) bool {
 	return mat.EqualApprox(img.Matrix(), that.Matrix(), 0.001)
 }
-func (img *SimpleStrage) Shape() ImageShape {
+func (img *ArrayImage) Shape() Shape {
 	s := img.data.Shape()
-	return ImageShape{N: s[0], Ch: s[1], Row: s[2], Col: s[3]}
+	return Shape{N: s[0], Ch: s[1], Row: s[2], Col: s[3]}
 }
 
-func (img *SimpleStrage) Get(n, ch, r, c int) float64 {
+func (img *ArrayImage) Get(n, ch, r, c int) float64 {
 	return img.data.Get(n, ch, r, c)
 }
-func (img *SimpleStrage) Set(n, ch, r, c int, v float64) {
+func (img *ArrayImage) Set(n, ch, r, c int, v float64) {
 	img.data.Set(v, n, ch, r, c)
 }
-func (img *SimpleStrage) Size() int {
+func (img *ArrayImage) Size() int {
 	return img.data.Shape().Size()
 }
 
-func (img *SimpleStrage) String() string {
+func (img *ArrayImage) String() string {
 	var buf bytes.Buffer
 	for n := 0; n < img.Shape().N; n++ {
 		chs := img.Channels(n)
@@ -100,7 +100,7 @@ func (img *SimpleStrage) String() string {
 	return buf.String()
 }
 
-func (img *SimpleStrage) Channels(n int) []mat.Mutable {
+func (img *ArrayImage) Channels(n int) []mat.Mutable {
 	shape := img.Shape()
 	ret := make([]mat.Mutable, shape.Ch)
 	chs := img.data.Segment(n)
@@ -109,20 +109,20 @@ func (img *SimpleStrage) Channels(n int) []mat.Mutable {
 	}
 	return ret
 }
-func (img *SimpleStrage) Matrix() mat.Matrix {
+func (img *ArrayImage) Matrix() mat.Matrix {
 	s := img.Shape()
 	return img.ToMatrix(s.N, s.Ch*s.Col*s.Row)
 }
-func (img *SimpleStrage) ToMatrix(row, col int) mat.Matrix {
+func (img *ArrayImage) ToMatrix(row, col int) mat.Matrix {
 	return img.data.AsMatrix(row, col)
 }
 
-func (img *SimpleStrage) Transpose(is ...int) ImageStrage {
+func (img *ArrayImage) Transpose(is ...int) Image {
 	return NewSimpleStrage(img.data.Transpose(is...))
 }
 
 // (shape.n * outRow * outCol, shape.ch * filterRow * filterCol)
-func Im2col(is ImageStrage, filterR, filterC, stride, pad int) *mat.Dense {
+func Im2col(is Image, filterR, filterC, stride, pad int) *mat.Dense {
 	shape := is.Shape()
 	outR := (shape.Row+2*pad-filterR)/stride + 1
 	outC := (shape.Col+2*pad-filterC)/stride + 1
@@ -149,7 +149,7 @@ func Im2col(is ImageStrage, filterR, filterC, stride, pad int) *mat.Dense {
 	return ret
 }
 
-func Col2im(m mat.Matrix, shape ImageShape, filterR, filterC, stride, pad int) ImageStrage {
+func Col2im(m mat.Matrix, shape Shape, filterR, filterC, stride, pad int) Image {
 	outR := (shape.Row+2*pad-filterR)/stride + 1
 	outC := (shape.Col+2*pad-filterC)/stride + 1
 

@@ -164,7 +164,7 @@ func TestArrayTranspose(t *testing.T) {
 
 	for _, c := range cases {
 		actual := c.array.Transpose(c.index...)
-		if !actual.DeepEqual(c.expect) {
+		if !actual.Equals(c.expect) {
 			t.Fatalf("expect %v\n%v got %v\n%v", c.expect.Shape(), c.expect, actual.Shape(), actual)
 		}
 	}

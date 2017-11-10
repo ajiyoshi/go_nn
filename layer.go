@@ -8,20 +8,20 @@ import (
 )
 
 type Convolution struct {
-	Weight ImageStrage
+	Weight Image
 	Bias   *mat.Vector
 	Stride int
 	Pad    int
 
-	dWeight   ImageStrage
+	dWeight   Image
 	dBias     *mat.Vector
 	col       mat.Matrix
 	colW      mat.Matrix
-	x         ImageStrage
+	x         Image
 	optimizer optimizer.Optimizer
 }
 
-func (c *Convolution) Forward(x ImageStrage) ImageStrage {
+func (c *Convolution) Forward(x Image) Image {
 	xs := x.Shape()
 	ws := c.Weight.Shape()
 
@@ -47,7 +47,7 @@ func (c *Convolution) Forward(x ImageStrage) ImageStrage {
 	return NewReshaped([]int{xs.N, outRow, outCol, ws.N}, ret).Transpose(0, 3, 1, 2)
 }
 
-func (c *Convolution) Backword(doutImg ImageStrage) ImageStrage {
+func (c *Convolution) Backword(doutImg Image) Image {
 	/*
 		FN, C, FH, FW = self.W.shape
 		dout = dout.transpose(0,2,3,1).reshape(-1, FN)
@@ -81,10 +81,10 @@ type Pooling struct {
 	Pad    int
 
 	argmax []int
-	x      ImageStrage
+	x      Image
 }
 
-func (p *Pooling) Forwad(x ImageStrage) ImageStrage {
+func (p *Pooling) Forwad(x Image) Image {
 	/*
 		N, C, H, W = x.shape
 		out_h = int(1 + (H - self.pool_h) / self.stride)
@@ -114,7 +114,7 @@ func (p *Pooling) Forwad(x ImageStrage) ImageStrage {
 	return NewReshaped([]int{s.N, outRow, outCol, s.Ch}, out).Transpose(0, 3, 1, 2)
 }
 
-func (p *Pooling) Backword(doutImage ImageStrage) ImageStrage {
+func (p *Pooling) Backword(doutImage Image) Image {
 	/*
 		dout = dout.transpose(0, 2, 3, 1)
 

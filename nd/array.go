@@ -14,7 +14,8 @@ type Array interface {
 	Segment(i int) Array
 	Transpose(is ...int) Array
 	String() string
-	DeepEqual(Array) bool
+	Equals(Array) bool
+	EqualApprox(Array, float64) bool
 	AsMatrix(row, col int) mat.Mutable
 }
 
@@ -87,13 +88,16 @@ func (x *ndArray) String() string {
 	}
 	return fmt.Sprintf("[%s]", strings.Join(tmp, ",\n"))
 }
-func (x *ndArray) DeepEqual(y Array) bool {
+func (x *ndArray) Equals(y Array) bool {
+	return x.EqualApprox(y, 0.001)
+}
+func (x *ndArray) EqualApprox(y Array, e float64) bool {
 	if !x.Shape().Equals(y.Shape()) {
 		return false
 	}
 	n := x.Shape().Size()
 	this, that := x.AsMatrix(1, n), y.AsMatrix(1, n)
-	return mat.EqualApprox(this, that, 0.01)
+	return mat.EqualApprox(this, that, e)
 }
 
 func (x *ndArray) AsMatrix(row, col int) mat.Mutable {

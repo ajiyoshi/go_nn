@@ -6,14 +6,14 @@ import (
 	mat "github.com/gonum/matrix/mat64"
 )
 
-func newShape(n, ch, r, c int) ImageShape {
-	return ImageShape{N: n, Ch: ch, Row: r, Col: c}
+func newShape(n, ch, r, c int) Shape {
+	return Shape{N: n, Ch: ch, Row: r, Col: c}
 }
 
 func TestCol2im(t *testing.T) {
 	cases := []struct {
 		title  string
-		shape  ImageShape
+		shape  Shape
 		image  []float64
 		col    mat.Matrix
 		expect []float64
@@ -179,7 +179,7 @@ func TestCol2im(t *testing.T) {
 func TestImageMatrix(t *testing.T) {
 	cases := []struct {
 		title  string
-		shape  ImageShape
+		shape  Shape
 		image  []float64
 		expect mat.Matrix
 	}{
@@ -230,7 +230,7 @@ func TestImageMatrix(t *testing.T) {
 func TestImageString(t *testing.T) {
 	cases := []struct {
 		title  string
-		input  *SimpleStrage
+		input  *ArrayImage
 		expect string
 	}{
 		{
