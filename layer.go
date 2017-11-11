@@ -1,7 +1,6 @@
 package gocnn
 
 import (
-	"fmt"
 	mat "github.com/gonum/matrix/mat64"
 
 	"github.com/ajiyoshi/gocnn/matrix"
@@ -145,18 +144,15 @@ func (p *Pooling) Backword(doutImage Image) Image {
 	*/
 	dout := doutImage.Transpose(0, 2, 3, 1)
 	poolSize := p.Row * p.Col
-	dmax := mat.NewDense(dout.Size(), poolSize, nil)
+	buf := make([]float64, dout.Size()*poolSize)
+	tmp := mat.NewDense(dout.Size(), poolSize, buf)
 	flat := mat.Row(nil, 0, dout.ToMatrix(1, dout.Size()))
 	for i, x := range flat {
 		j := p.argmax[i]
-		dmax.Set(i, j, x)
+		tmp.Set(i, j, x)
 	}
-
-	fmt.Println(dmax.Dims())
-	fmt.Println(p.x.Shape())
-	fmt.Println(p.Row)
-	fmt.Println(p.Col)
-	fmt.Println(p.Stride)
+	s := dout.Shape()
+	dmax := mat.NewDense(s.N*s.Ch*s.Row, s.Col*poolSize, buf)
 
 	return Col2im(dmax, p.x.Shape(), p.Row, p.Col, p.Stride, p.Pad)
 }

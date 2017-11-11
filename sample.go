@@ -1,20 +1,15 @@
 package gocnn
 
 import (
+	"fmt"
 	"github.com/ajiyoshi/gocnn/batch"
 	"github.com/ajiyoshi/gocnn/optimizer"
 )
 
-const WeightInitStd = 0.1
+const WeightInitStd = 0.01
 
 func NewSimpleConvNet() *SimpleCNN {
 	opt := optimizer.NewMomentumFactory(0.1, 0.1)
-	nnParam := &batch.NNParam{
-		InputSize:  4320,
-		HiddenSize: 100,
-		OutputSize: 10,
-	}
-	nnLayer := batch.New2LayerNN(nnParam, opt)
 
 	cnnParam := &CNNParam{
 		FilterNum:  30,
@@ -24,6 +19,20 @@ func NewSimpleConvNet() *SimpleCNN {
 		Pad:        0,
 	}
 	cnn := NewSingleCNN(cnnParam, opt)
+
+	//input_size = input_dim[1]
+	//conv_output_size = (input_size - filter_size + 2*filter_pad) / filter_stride + 1
+	//pool_output_size = int(filter_num * (conv_output_size/2) * (conv_output_size/2))
+	convOutput := (28-cnnParam.FilterSize+2*cnnParam.Pad)/cnnParam.Stride + 1
+	poolOutput := cnnParam.FilterNum * (convOutput / 2) * (convOutput * 2)
+	fmt.Println(poolOutput)
+
+	nnParam := &batch.NNParam{
+		InputSize:  4320,
+		HiddenSize: 100,
+		OutputSize: 10,
+	}
+	nnLayer := batch.New2LayerNN(nnParam, opt)
 
 	return &SimpleCNN{
 		imageLayers: []ImageLayer{cnn.Conv, cnn.Relu, cnn.Pool},

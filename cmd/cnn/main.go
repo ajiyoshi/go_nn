@@ -40,7 +40,7 @@ func run() error {
 		x, t := buf.Bake()
 		img := gocnn.NewReshaped(shape, x)
 		loss := cnn.Train(img, t)
-		fmt.Println(loss)
+		fmt.Printf("%f, %f\n", loss, cnn.Accracy(img, t))
 	}
 
 	return nil
