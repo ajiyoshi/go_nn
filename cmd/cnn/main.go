@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"os"
+	"runtime/pprof"
 	"time"
 
 	"github.com/ajiyoshi/gocnn"
@@ -14,7 +16,15 @@ func init() {
 }
 
 func main() {
-	err := run()
+	cpuprofile := "mycpu.prof"
+	f, err := os.Create(cpuprofile)
+	if err != nil {
+		panic(err)
+	}
+	pprof.StartCPUProfile(f)
+	defer pprof.StopCPUProfile()
+
+	err = run()
 	if err != nil {
 		panic(err)
 	}
@@ -33,7 +43,7 @@ func run() error {
 
 	cnn := gocnn.NewSimpleConvNet()
 	buf := mnist.NewTrainBuffer(N, len, 10)
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 1; i++ {
 		index := rand.Intn(m.Images.Num - N)
 		at := mnist.Seq(index, N)
 		buf.Load(m, at)

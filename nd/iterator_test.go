@@ -15,9 +15,15 @@ func TestArrayIterator(t *testing.T) {
 		{[]int{0, 1, 0}},
 		{[]int{0, 1, 1}},
 		{[]int{0, 1, 2}},
+		{[]int{1, 0, 0}},
+		{[]int{1, 0, 1}},
+		{[]int{1, 0, 2}},
+		{[]int{1, 1, 0}},
+		{[]int{1, 1, 1}},
+		{[]int{1, 1, 2}},
 	}
 
-	itr := NewShape(1, 2, 3).Iterator()
+	itr := NewShape(2, 2, 3).Iterator()
 	if !itr.OK() {
 		t.Fail()
 	}

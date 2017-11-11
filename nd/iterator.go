@@ -2,12 +2,11 @@ package nd
 
 func (x Shape) Iterator() Iterator {
 	coef := Coefficient(x)
-	max := coef[0]
 	return &ndArrayIterator{
 		i:     0,
 		shape: x,
 		coef:  coef,
-		max:   max,
+		max:   x.Size(),
 		buf:   make([]int, len(x)),
 	}
 }
