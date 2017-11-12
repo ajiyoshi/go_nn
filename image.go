@@ -11,6 +11,8 @@ import (
 )
 
 type Image interface {
+	Get(n, ch, r, c int) float64
+	Set(n, ch, r, c int, v float64)
 	Channels(n int) []mat.Mutable
 	Shape() *Shape
 	String() string
@@ -91,6 +93,12 @@ func NewArrayImage(a nd.Array) *ArrayImage {
 	return &ArrayImage{a}
 }
 
+func (img *ArrayImage) Get(n, ch, r, c int) float64 {
+	return img.data.Get(n, ch, r, c)
+}
+func (img *ArrayImage) Set(n, ch, r, c int, v float64) {
+	img.data.Set(v, n, ch, r, c)
+}
 func (img *ArrayImage) Equal(that Image) bool {
 	return img.data.Equals(that.ToArray())
 }
@@ -119,9 +127,8 @@ func (img *ArrayImage) String() string {
 func (img *ArrayImage) Channels(n int) []mat.Mutable {
 	shape := img.Shape()
 	ret := make([]mat.Mutable, shape.Ch)
-	chs := img.data.Segment(n)
 	for ch := 0; ch < shape.Ch; ch++ {
-		ret[ch] = chs.Segment(ch).AsMatrix(shape.Row, shape.Col)
+		ret[ch] = img.ChannelMatrix(n, ch)
 	}
 	return ret
 }
@@ -216,6 +223,7 @@ func Col2im(m mat.Matrix, shape *Shape, filterR, filterC, stride, pad int) Image
 
 var (
 	_ mat.Matrix = &reshapedMatrix{}
+	_ mat.Matrix = &ChannelMatrix{}
 )
 
 type reshapedMatrix struct {
@@ -258,5 +266,32 @@ func (m *reshapedMatrix) Dims() (int, int) {
 	return m.row, m.col
 }
 func (m *reshapedMatrix) T() mat.Matrix {
+	return matrix.NewTransposeMutable(m)
+}
+
+type ChannelMatrix struct {
+	img   Image
+	n, ch int
+}
+
+func (img *ArrayImage) ChannelMatrix(n, ch int) *ChannelMatrix {
+	return &ChannelMatrix{
+		img: img,
+		n:   n,
+		ch:  ch,
+	}
+}
+
+func (m *ChannelMatrix) At(i, j int) float64 {
+	return m.img.Get(m.n, m.ch, i, j)
+}
+func (m *ChannelMatrix) Set(i, j int, x float64) {
+	m.img.Set(m.n, m.ch, i, j, x)
+}
+func (m *ChannelMatrix) Dims() (int, int) {
+	shape := m.img.Shape()
+	return shape.Row, shape.Col
+}
+func (m *ChannelMatrix) T() mat.Matrix {
 	return matrix.NewTransposeMutable(m)
 }

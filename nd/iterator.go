@@ -24,13 +24,24 @@ func (itr *ndArrayIterator) OK() bool {
 }
 func (itr *ndArrayIterator) Next() {
 	itr.i++
+
+	for i := len(itr.buf) - 1; i >= 0; i-- {
+		if itr.buf[i]+1 < itr.shape[i] {
+			itr.buf[i]++
+			clear(itr.buf[i+1:])
+			return
+		}
+	}
 }
 func (itr *ndArrayIterator) Reset() {
 	itr.i = 0
+	clear(itr.buf)
 }
 func (itr *ndArrayIterator) Index() []int {
-	for i, c := range itr.coef {
-		itr.buf[i] = itr.i / c % itr.shape[i]
-	}
 	return itr.buf
+}
+func clear(idx []int) {
+	for i, _ := range idx {
+		idx[i] = 0
+	}
 }
