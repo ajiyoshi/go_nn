@@ -158,6 +158,10 @@ func (img *ArrayImage) MulEach(y Image) Image {
 	img.ToArray().MulEach(y.ToArray())
 	return img
 }
+func (img *ArrayImage) Map(f func(float64) float64) Image {
+	img.ToArray().Map(f)
+	return img
+}
 
 func (img *ArrayImage) Transpose(is ...int) Image {
 	return NewArrayImage(img.data.Transpose(is...))

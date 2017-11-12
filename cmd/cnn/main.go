@@ -16,19 +16,19 @@ func init() {
 }
 
 func main() {
-	_ = func() {
-		cpuprofile := "mycpu.prof"
-		f, err := os.Create(cpuprofile)
+	cpuprofile := "mycpu.prof"
+	f, err := os.Create(cpuprofile)
+	if err != nil {
+		panic(err)
+	}
+	pprof.StartCPUProfile(f)
+	defer pprof.StopCPUProfile()
+
+	{
+		err := run()
 		if err != nil {
 			panic(err)
 		}
-		pprof.StartCPUProfile(f)
-		defer pprof.StopCPUProfile()
-	}
-
-	err := run()
-	if err != nil {
-		panic(err)
 	}
 }
 
@@ -40,12 +40,12 @@ func run() error {
 	defer m.Close()
 
 	len := m.Images.Rows * m.Images.Cols
-	N := 25
+	N := 50
 	shape := gocnn.NewShape(N, 1, m.Images.Rows, m.Images.Cols)
 
-	cnn := gocnn.NewSimpleConvNet()
+	cnn := gocnn.NewSimpleConvNet(shape)
 	buf := mnist.NewTrainBuffer(N, len, 10)
-	for i := 0; i < 1; i++ {
+	for i := 0; i < 1000; i++ {
 		index := rand.Intn(m.Images.Num - N)
 		at := mnist.Seq(index, N)
 		buf.Load(m, at)

@@ -1,34 +1,34 @@
 package gocnn
 
 import (
-	"fmt"
 	"github.com/ajiyoshi/gocnn/batch"
 	"github.com/ajiyoshi/gocnn/optimizer"
 )
 
 const WeightInitStd = 0.01
 
-func NewSimpleConvNet() *SimpleCNN {
-	opt := optimizer.NewMomentumFactory(0.1, 0.1)
+func NewSimpleConvNet(s *Shape) *SimpleCNN {
+	//opt := optimizer.NewMomentumFactory(0.1, 0.1)
+	opt := optimizer.NewAdam(0.001, 0.9, 0.999)
 
-	cnnParam := &CNNParam{
+	cp := &CNNParam{
 		FilterNum:  30,
-		Channel:    1,
+		Channel:    s.Ch,
 		FilterSize: 5,
 		Stride:     1,
 		Pad:        0,
 	}
-	cnn := NewSingleCNN(cnnParam, opt)
+	cnn := NewSingleCNN(cp, opt)
 
 	//input_size = input_dim[1]
 	//conv_output_size = (input_size - filter_size + 2*filter_pad) / filter_stride + 1
 	//pool_output_size = int(filter_num * (conv_output_size/2) * (conv_output_size/2))
-	convOutput := (28-cnnParam.FilterSize+2*cnnParam.Pad)/cnnParam.Stride + 1
-	poolOutput := cnnParam.FilterNum * (convOutput / 2) * (convOutput * 2)
-	fmt.Println(poolOutput)
+	convOutRow := (s.Row+2*cp.Pad-cp.FilterSize)/cp.Stride + 1
+	convOutCol := (s.Col+2*cp.Pad-cp.FilterSize)/cp.Stride + 1
+	poolOutput := cp.FilterNum * (convOutRow / 2) * (convOutCol / 2)
 
 	nnParam := &batch.NNParam{
-		InputSize:  4320,
+		InputSize:  poolOutput,
 		HiddenSize: 100,
 		OutputSize: 10,
 	}

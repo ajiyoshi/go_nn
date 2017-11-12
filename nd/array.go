@@ -16,13 +16,18 @@ type Array interface {
 	String() string
 	Equals(Array) bool
 	EqualApprox(Array, float64) bool
-	AsMatrix(row, col int) mat.Mutable
+	AsMatrix(row, col int) *mat.Dense
 	Iterator() Iterator
 
 	Scale(float64) Array
 	AddSalar(float64) Array
 	AddEach(Array) Array
+	SubEach(Array) Array
 	MulEach(Array) Array
+	DivEach(Array) Array
+
+	Map(func(float64) float64) Array
+	Clone() Array
 }
 
 type Shape []int
@@ -123,7 +128,7 @@ func (x *ndArray) EqualApprox(y Array, e float64) bool {
 	return mat.EqualApprox(this, that, e)
 }
 
-func (x *ndArray) AsMatrix(row, col int) mat.Mutable {
+func (x *ndArray) AsMatrix(row, col int) *mat.Dense {
 	return NewMatrix(row, col, x)
 }
 
@@ -148,6 +153,26 @@ func (x *ndArray) AddSalar(k float64) Array {
 	return x
 }
 func (x *ndArray) AddEach(y Array) Array {
+	return x.Each(y, func(a, b float64) float64 {
+		return a + b
+	})
+}
+func (x *ndArray) SubEach(y Array) Array {
+	return x.Each(y, func(a, b float64) float64 {
+		return a - b
+	})
+}
+func (x *ndArray) MulEach(y Array) Array {
+	return x.Each(y, func(a, b float64) float64 {
+		return a * b
+	})
+}
+func (x *ndArray) DivEach(y Array) Array {
+	return x.Each(y, func(a, b float64) float64 {
+		return a / b
+	})
+}
+func (x *ndArray) Each(y Array, op func(float64, float64) float64) Array {
 	if !x.Shape().Equals(y.Shape()) {
 		panic("shape should be same")
 	}
@@ -155,21 +180,27 @@ func (x *ndArray) AddEach(y Array) Array {
 	for i.Reset(); i.OK(); i.Next() {
 		index := i.Index()
 		a, b := x.Get(index...), y.Get(index...)
-		x.Set(a+b, index...)
+		x.Set(op(a, b), index...)
 	}
 	return x
 }
-func (x *ndArray) MulEach(y Array) Array {
-	if !x.Shape().Equals(y.Shape()) {
-		panic("shape should be same")
-	}
-	i := x.Shape().Iterator()
-	for i.Reset(); i.OK(); i.Next() {
+func (x *ndArray) Map(f func(float64) float64) Array {
+	ret := Zeros(x.shape)
+	for i := x.Iterator(); i.OK(); i.Next() {
 		index := i.Index()
-		a, b := x.Get(index...), y.Get(index...)
-		x.Set(a+b, index...)
+		v := x.Get(index...)
+		ret.Set(f(v), index...)
 	}
-	return x
+	return ret
+}
+func (x *ndArray) Clone() Array {
+	ret := Zeros(x.shape)
+	for i := x.Iterator(); i.OK(); i.Next() {
+		index := i.Index()
+		v := x.Get(index...)
+		x.Set(v, index...)
+	}
+	return ret
 }
 
 func (s Shape) Size() int {

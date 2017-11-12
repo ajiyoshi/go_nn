@@ -18,14 +18,15 @@ var (
 	_ mat.Mutable = (*ndArrayMatrix)(nil)
 )
 
-func NewMatrix(row, col int, x Array) *ndArrayMatrix {
-	return &ndArrayMatrix{
-		row:   row,
-		col:   col,
-		coef:  Coefficient(x.Shape()),
-		array: x,
-		buf:   make([]int, len(x.Shape())),
+func NewMatrix(row, col int, x Array) *mat.Dense {
+	buf := make([]float64, row*col)
+
+	ptr := 0
+	for i := x.Iterator(); i.OK(); i.Next() {
+		buf[ptr] = x.Get(i.Index()...)
+		ptr++
 	}
+	return mat.NewDense(row, col, buf)
 }
 func (m *ndArrayMatrix) index(i, j int) []int {
 	n := i*m.col + j
