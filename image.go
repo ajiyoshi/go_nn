@@ -22,11 +22,6 @@ type Image interface {
 	ToMatrix(row, col int) mat.Matrix
 	ToArray() nd.Array
 	Size() int
-
-	Scale(float64) Image
-	AddSalar(float64) Image
-	AddEach(Image) Image
-	MulEach(Image) Image
 }
 
 type ArrayImage struct {
@@ -141,26 +136,6 @@ func (img *ArrayImage) ToMatrix(row, col int) mat.Matrix {
 }
 func (img *ArrayImage) ToArray() nd.Array {
 	return img.data
-}
-func (img *ArrayImage) Scale(k float64) Image {
-	img.ToArray().Scale(k)
-	return img
-}
-func (img *ArrayImage) AddSalar(k float64) Image {
-	img.ToArray().AddSalar(k)
-	return img
-}
-func (img *ArrayImage) AddEach(y Image) Image {
-	img.ToArray().AddEach(y.ToArray())
-	return img
-}
-func (img *ArrayImage) MulEach(y Image) Image {
-	img.ToArray().MulEach(y.ToArray())
-	return img
-}
-func (img *ArrayImage) Map(f func(float64) float64) Image {
-	img.ToArray().Map(f)
-	return img
 }
 
 func (img *ArrayImage) Transpose(is ...int) Image {

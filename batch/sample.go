@@ -18,7 +18,7 @@ type TwoLayerNN struct {
 	SoftMax *SoftMaxWithLoss
 }
 
-const WeightInitStd = 0.1
+const WeightInitStd = 0.01
 
 func New2LayerNN(param *NNParam, f optimizer.OptimizerFactory) *TwoLayerNN {
 	return &TwoLayerNN{

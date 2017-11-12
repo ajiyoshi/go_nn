@@ -18,7 +18,7 @@ type Convolution struct {
 	dBias   *mat.Vector
 	col     mat.Matrix
 	colW    mat.Matrix
-	x       Image
+	s       *Shape
 }
 
 func NewConvolution(s *Shape, stride, pad int, opt optimizer.Optimizer) *Convolution {
@@ -35,7 +35,7 @@ func (c *Convolution) Forward(x Image) Image {
 	ws := c.Weight.Shape()
 
 	if xs.Ch != ws.Ch {
-		//panic("number of channels was not match")
+		panic("number of channels was not match")
 	}
 
 	outRow := 1 + (xs.Row+2*c.Pad-ws.Row)/c.Stride
@@ -45,7 +45,7 @@ func (c *Convolution) Forward(x Image) Image {
 	c.col = Im2col(x, ws.Row, ws.Col, c.Stride, c.Pad)
 	// colW : (ws.ch*ws.row*ws.col, ws.n)
 	c.colW = c.Weight.Matrix().T()
-	c.x = x
+	c.s = x.Shape()
 
 	// ret : (xs.n*outRow*outCol, ws.n)
 	ret := mul(c.col, c.colW)
@@ -78,7 +78,7 @@ func (c *Convolution) Backword(doutImg Image) Image {
 	c.dBias = matrix.SumCols(dout, c.dBias)
 
 	dcol := mul(dout, c.colW.T())
-	dx := Col2im(dcol, c.x.Shape(), s.Row, s.Col, c.Stride, c.Pad)
+	dx := Col2im(dcol, c.s, s.Row, s.Col, c.Stride, c.Pad)
 
 	return dx
 }
