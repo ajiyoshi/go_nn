@@ -16,15 +16,17 @@ func init() {
 }
 
 func main() {
-	cpuprofile := "mycpu.prof"
-	f, err := os.Create(cpuprofile)
-	if err != nil {
-		panic(err)
+	_ = func() {
+		cpuprofile := "mycpu.prof"
+		f, err := os.Create(cpuprofile)
+		if err != nil {
+			panic(err)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
 	}
-	pprof.StartCPUProfile(f)
-	defer pprof.StopCPUProfile()
 
-	err = run()
+	err := run()
 	if err != nil {
 		panic(err)
 	}
