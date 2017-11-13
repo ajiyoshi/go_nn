@@ -176,9 +176,7 @@ func (r *ReLU) Forward(x Image) Image {
 		}
 	}, m)
 
-	r.mask.MulElem(r.mask, m)
-
-	return NewReshaped(s, r.mask)
+	return NewReshaped(s, mulElem(r.mask, m))
 }
 func (r *ReLU) Backword(dout Image) Image {
 	row, col := r.mask.Dims()
@@ -192,6 +190,11 @@ func (r *ReLU) Update() {}
 func mul(x, y mat.Matrix) *mat.Dense {
 	var ret mat.Dense
 	ret.Mul(x, y)
+	return &ret
+}
+func mulElem(x, y mat.Matrix) *mat.Dense {
+	var ret mat.Dense
+	ret.MulElem(x, y)
 	return &ret
 }
 

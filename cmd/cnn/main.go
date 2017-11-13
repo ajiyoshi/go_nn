@@ -45,7 +45,7 @@ func run() error {
 
 	cnn := gocnn.NewSimpleConvNet(shape)
 	buf := mnist.NewTrainBuffer(N, len, 10)
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 30; i++ {
 		index := rand.Intn(m.Images.Num - N)
 		at := mnist.Seq(index, N)
 		buf.Load(m, at)
