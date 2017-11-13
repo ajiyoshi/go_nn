@@ -51,7 +51,8 @@ func run() error {
 		buf.Load(m, at)
 		x, t := buf.Bake()
 		img := gocnn.NewReshaped(shape, x)
-		loss := cnn.Train(img, t)
+		cnn.Train(img, t)
+		loss := cnn.Loss(img, t)
 		fmt.Printf("%f, %f\n", loss, cnn.Accracy(img, t))
 	}
 
