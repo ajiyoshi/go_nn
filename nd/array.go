@@ -176,8 +176,7 @@ func (x *ndArray) Each(y Array, op func(float64, float64) float64) Array {
 	if !x.Shape().Equals(y.Shape()) {
 		panic("shape should be same")
 	}
-	i := x.Shape().Iterator()
-	for i.Reset(); i.OK(); i.Next() {
+	for i := x.Iterator(); i.OK(); i.Next() {
 		index := i.Index()
 		a, b := x.Get(index...), y.Get(index...)
 		x.Set(op(a, b), index...)

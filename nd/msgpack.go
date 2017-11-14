@@ -6,7 +6,6 @@ import (
 	"github.com/vmihailenco/msgpack"
 	"io"
 	"os"
-	"strings"
 )
 
 type numpyMsgpack struct {
@@ -58,22 +57,26 @@ func (x *numpyMsgpack) Extract() (Array, error) {
 }
 
 func (x *numpyMsgpack) Decoder() Decoder {
-	if strings.HasPrefix(x.Type, "<f4") {
-		return f32Decoder
-	} else if strings.HasPrefix(x.Type, "<f") {
-		return floatDecoder
-	} else if strings.HasPrefix(x.Type, "<i") {
-		return intDecoder
+	switch x.Type {
+	case "<f4":
+		return float32Decoder
+	case "<f8":
+		return float64Decoder
+	case "<i8":
+		return int64Decoder
+	case "|b1":
+		return boolDecoder
+	default:
+		panic("unknown type:" + x.Type)
 	}
-	panic("unknown dtype")
 }
 
 type Decoder func(io.Reader, *float64) error
 
-func floatDecoder(r io.Reader, ret *float64) error {
+func float64Decoder(r io.Reader, ret *float64) error {
 	return binary.Read(r, binary.LittleEndian, ret)
 }
-func intDecoder(r io.Reader, ret *float64) error {
+func int64Decoder(r io.Reader, ret *float64) error {
 	var i int64
 	err := binary.Read(r, binary.LittleEndian, &i)
 	if err == nil {
@@ -81,11 +84,21 @@ func intDecoder(r io.Reader, ret *float64) error {
 	}
 	return err
 }
-func f32Decoder(r io.Reader, ret *float64) error {
+func float32Decoder(r io.Reader, ret *float64) error {
 	var f float32
 	err := binary.Read(r, binary.LittleEndian, &f)
 	if err == nil {
 		*ret = float64(f)
+	}
+	return err
+}
+func boolDecoder(r io.Reader, ret *float64) error {
+	var b bool
+	err := binary.Read(r, binary.LittleEndian, &b)
+	if err == nil {
+		if b {
+			*ret = 1
+		}
 	}
 	return err
 }

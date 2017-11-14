@@ -59,6 +59,7 @@ type ImageLayer interface {
 	Forward(Image) Image
 	Backword(Image) Image
 	Update()
+	Equals(ImageLayer) bool
 }
 
 var (

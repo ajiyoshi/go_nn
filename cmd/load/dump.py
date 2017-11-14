@@ -50,17 +50,27 @@ batch_mask = np.array([0, 1, 2])
 x_batch = x_train[batch_mask]
 t_batch = t_train[batch_mask]
 
-conv1 = network.layers['Conv1']
+conv = network.layers['Conv1']
 
-save_array("x.mp", x_batch)
-save_array("W0.mp", conv1.W)
-x1 = conv1.forward(x_batch)
+save_array("x0.mp", x_batch)
+save_array("W0.mp", conv.W)
+
+x1 = conv.forward(x_batch)
 save_array("x1.mp", x1)
-save_array("col.mp", conv1.col)
-save_array("colW.mp", conv1.col_W)
+y1 = conv.backward(x1)
+save_array("y1.mp", y1)
 
-#grads = network.gradient(x_batch, t_batch)
-#trainer.optimizer.update(network.params, grads)
+relu = network.layers['Relu1']
 
-save("after.mp", network)
+x2 = relu.forward(x1)
+save_array("x2.mp", x2)
+y2 = relu.backward(x2)
+save_array("y2.mp", y2)
+
+pool = network.layers['Pool1']
+
+x3 = pool.forward(x2)
+save_array("x3.mp", x3)
+y3 = pool.backward(x3)
+save_array("y3.mp", y3)
 

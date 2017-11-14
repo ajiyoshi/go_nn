@@ -1,9 +1,10 @@
 package gocnn
 
 import (
+	"testing"
+
 	"github.com/ajiyoshi/gocnn/nd"
 	mat "github.com/gonum/matrix/mat64"
-	"testing"
 )
 
 func zeros(n int) *mat.Vector {
@@ -14,34 +15,59 @@ func mustLoad(path string) Image {
 	return NewArrayImage(nd.Must(nd.Load(path)))
 }
 
-func TestTest(t *testing.T) {
+func TestLayers(t *testing.T) {
 	cases := []struct {
 		msg      string
-		generate func() (c *Convolution, x, expect Image)
+		generate func() (layer ImageLayer, x0, x1, y1 Image)
 	}{
 		{
-			msg: "",
-			generate: func() (*Convolution, Image, Image) {
-				x := mustLoad("t/x.mp")
-				expect := mustLoad("t/x1.mp")
-				w := mustLoad("t/W0.mp")
+			msg: "conv",
+			generate: func() (layer ImageLayer, x0, x1, y1 Image) {
+				x0 = mustLoad("t/x0.mp")
+				x1 = mustLoad("t/x1.mp")
+				y1 = mustLoad("t/y1.mp")
 
-				conv := &Convolution{
+				w := mustLoad("t/W0.mp")
+				layer = &Convolution{
 					Weight: w,
 					Bias:   mat.NewVector(w.Shape().N, nil),
 					Stride: 1,
 					Pad:    0,
 				}
+				return
+			},
+		},
+		{
+			msg: "relu",
+			generate: func() (layer ImageLayer, x0, x1, y1 Image) {
+				x0 = mustLoad("t/x1.mp")
+				x1 = mustLoad("t/x2.mp")
+				y1 = mustLoad("t/y2.mp")
+				layer = &ReLU{}
+				return
+			},
+		},
+		{
+			msg: "pool",
+			generate: func() (layer ImageLayer, x0, x1, y1 Image) {
+				x0 = mustLoad("t/x2.mp")
+				x1 = mustLoad("t/x3.mp")
+				y1 = mustLoad("t/y3.mp")
 
-				return conv, x, expect
+				layer = &Pooling{Row: 2, Col: 2, Stride: 2}
+				return
 			},
 		},
 	}
 	for _, c := range cases {
-		layer, x, expect := c.generate()
-		y := layer.Forward(x)
-		if !y.Equal(expect) {
-			t.Fatalf("expect \n%v got \n%v", expect, y)
+		layer, x0, x1, y1 := c.generate()
+		_x1 := layer.Forward(x0)
+		if !_x1.Equal(x1) {
+			t.Fatalf("(%s) expect \n%v got \n%v", c.msg, x1, _x1)
+		}
+		_y1 := layer.Backword(_x1)
+		if !_y1.Equal(y1) {
+			t.Fatalf("(%s) expect \n%v got \n%v", c.msg, y1, _y1)
 		}
 	}
 }

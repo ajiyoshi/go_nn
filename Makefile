@@ -1,3 +1,5 @@
+.PHONY: t
+
 all:
 
 t:

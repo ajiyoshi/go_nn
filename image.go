@@ -18,8 +18,8 @@ type Image interface {
 	String() string
 	Equal(Image) bool
 	Transpose(is ...int) Image
-	Matrix() mat.Matrix
-	ToMatrix(row, col int) mat.Matrix
+	Matrix() *mat.Dense
+	ToMatrix(row, col int) *mat.Dense
 	ToArray() nd.Array
 	Size() int
 }
@@ -127,11 +127,11 @@ func (img *ArrayImage) Channels(n int) []mat.Mutable {
 	}
 	return ret
 }
-func (img *ArrayImage) Matrix() mat.Matrix {
+func (img *ArrayImage) Matrix() *mat.Dense {
 	s := img.Shape()
 	return img.ToMatrix(s.N, s.Ch*s.Col*s.Row)
 }
-func (img *ArrayImage) ToMatrix(row, col int) mat.Matrix {
+func (img *ArrayImage) ToMatrix(row, col int) *mat.Dense {
 	return img.data.AsMatrix(row, col)
 }
 func (img *ArrayImage) ToArray() nd.Array {

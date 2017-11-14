@@ -9,6 +9,7 @@ dump: prepare
 		-w /var/python/deep-learning-from-scratch/ch07 \
 		np-dump \
 		python dump.py
+	mv deep-learning-from-scratch/ch07/*.mp ../../t/
 
 run: dump
 	go run main.go

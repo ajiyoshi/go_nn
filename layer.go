@@ -88,6 +88,15 @@ func (c *Convolution) Update() {
 	c.Optimizer.UpdateBias(c.Bias, c.dBias)
 }
 
+func (c *Convolution) Equals(that ImageLayer) bool {
+	switch it := that.(type) {
+	case *Convolution:
+		return c.Weight.Equal(it.Weight) && mat.EqualApprox(c.Bias, it.Bias, 0.01)
+	default:
+		return false
+	}
+}
+
 type Pooling struct {
 	Row    int
 	Col    int
@@ -159,33 +168,53 @@ func (p *Pooling) Backword(doutImage Image) Image {
 
 func (p *Pooling) Update() {}
 
+func (p *Pooling) Equals(that ImageLayer) bool {
+	switch that.(type) {
+	case *Pooling:
+		return true
+	default:
+		return false
+	}
+}
+
 type ReLU struct {
-	mask *mat.Dense
+	mask mat.Dense
 }
 
 func (r *ReLU) Forward(x Image) Image {
 	s := x.Shape()
-	r.mask = mat.NewDense(s.N, s.Size()/s.N, nil)
 	m := x.ToMatrix(s.N, s.Size()/s.N)
 
 	r.mask.Apply(func(i, j int, v float64) float64 {
-		if v < 0 {
+		if v <= 0 {
 			return 0
 		} else {
 			return 1
 		}
 	}, m)
 
-	return NewReshaped(s, mulElem(r.mask, m))
+	m.MulElem(m, &r.mask)
+	return NewReshaped(s, m)
 }
 func (r *ReLU) Backword(dout Image) Image {
 	row, col := r.mask.Dims()
 	m := dout.ToMatrix(row, col)
-	r.mask.MulElem(r.mask, m)
-	return NewReshaped(dout.Shape(), r.mask)
+	m.MulElem(&r.mask, m)
+	return NewReshaped(dout.Shape(), m)
 }
 
 func (r *ReLU) Update() {}
+
+func (r *ReLU) Equals(that ImageLayer) bool {
+	switch it := that.(type) {
+	case *ReLU:
+		r0, c0 := r.mask.Dims()
+		r1, c1 := it.mask.Dims()
+		return r0 == r1 && c0 == c1
+	default:
+		return false
+	}
+}
 
 func mul(x, y mat.Matrix) *mat.Dense {
 	var ret mat.Dense
