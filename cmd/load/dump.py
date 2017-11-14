@@ -52,11 +52,12 @@ t_batch = t_train[batch_mask]
 
 conv1 = network.layers['Conv1']
 
-save_array("W0", conv1.W)
+save_array("x.mp", x_batch)
+save_array("W0.mp", conv1.W)
 x1 = conv1.forward(x_batch)
-save_array("x1", x1)
-save_array("col", conv1.col)
-save_array("colW", conv1.col_W)
+save_array("x1.mp", x1)
+save_array("col.mp", conv1.col)
+save_array("colW.mp", conv1.col_W)
 
 #grads = network.gradient(x_batch, t_batch)
 #trainer.optimizer.update(network.params, grads)

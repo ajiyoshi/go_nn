@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"github.com/vmihailenco/msgpack"
 	"io"
+	"os"
 	"strings"
 )
 
@@ -12,6 +13,22 @@ type numpyMsgpack struct {
 	Type  string `msgpack:"type"`
 	Data  []byte `msgpack:"data"`
 	Shape []int  `msgpack:"shape"`
+}
+
+func Must(a Array, err error) Array {
+	if err != nil {
+		panic(err)
+	}
+	return a
+}
+
+func Load(path string) (Array, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	return NewDecodedArray(f)
 }
 
 func NewDecodedArray(r io.Reader) (Array, error) {
@@ -41,7 +58,9 @@ func (x *numpyMsgpack) Extract() (Array, error) {
 }
 
 func (x *numpyMsgpack) Decoder() Decoder {
-	if strings.HasPrefix(x.Type, "<f") {
+	if strings.HasPrefix(x.Type, "<f4") {
+		return f32Decoder
+	} else if strings.HasPrefix(x.Type, "<f") {
 		return floatDecoder
 	} else if strings.HasPrefix(x.Type, "<i") {
 		return intDecoder
@@ -59,6 +78,14 @@ func intDecoder(r io.Reader, ret *float64) error {
 	err := binary.Read(r, binary.LittleEndian, &i)
 	if err == nil {
 		*ret = float64(i)
+	}
+	return err
+}
+func f32Decoder(r io.Reader, ret *float64) error {
+	var f float32
+	err := binary.Read(r, binary.LittleEndian, &f)
+	if err == nil {
+		*ret = float64(f)
 	}
 	return err
 }

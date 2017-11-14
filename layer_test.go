@@ -10,6 +10,42 @@ func zeros(n int) *mat.Vector {
 	return mat.NewVector(n, make([]float64, n))
 }
 
+func mustLoad(path string) Image {
+	return NewArrayImage(nd.Must(nd.Load(path)))
+}
+
+func TestTest(t *testing.T) {
+	cases := []struct {
+		msg      string
+		generate func() (c *Convolution, x, expect Image)
+	}{
+		{
+			msg: "",
+			generate: func() (*Convolution, Image, Image) {
+				x := mustLoad("t/x.mp")
+				expect := mustLoad("t/x1.mp")
+				w := mustLoad("t/W0.mp")
+
+				conv := &Convolution{
+					Weight: w,
+					Bias:   mat.NewVector(w.Shape().N, nil),
+					Stride: 1,
+					Pad:    0,
+				}
+
+				return conv, x, expect
+			},
+		},
+	}
+	for _, c := range cases {
+		layer, x, expect := c.generate()
+		y := layer.Forward(x)
+		if !y.Equal(expect) {
+			t.Fatalf("expect \n%v got \n%v", expect, y)
+		}
+	}
+}
+
 func TestForward(t *testing.T) {
 
 	cases := []struct {
