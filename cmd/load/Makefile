@@ -11,6 +11,14 @@ dump: prepare
 		python dump.py
 	mv deep-learning-from-scratch/ch07/*.mp ../../t/
 
+full: prepare
+	docker run --rm -it \
+		-v `pwd`:/var/python \
+		-w /var/python/deep-learning-from-scratch/ch07 \
+		np-dump \
+		python train.py
+	mv deep-learning-from-scratch/ch07/*.mp ../../t/
+
 run: dump
 	go run main.go
 
@@ -21,4 +29,4 @@ build:
 	docker build -t np-dump docker/
 
 prepare:
-	cp ./dump.py deep-learning-from-scratch/ch07
+	cp *.py deep-learning-from-scratch/ch07
